@@ -8,6 +8,8 @@ from typing import NamedTuple
 
 class Globals(NamedTuple):
     APP_NAME = 'competition'
+    user1_name = 'TestName'
+    user1_password = 'TestPassword1234'
 
 
 G = Globals
