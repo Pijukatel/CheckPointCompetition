@@ -43,4 +43,5 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     """Using signals to save membership when user is saved."""
-    instance.membership.save()
+    if not instance.is_superuser:
+        instance.membership.save()

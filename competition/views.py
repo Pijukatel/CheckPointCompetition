@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 from competition.views_custom_mixins import SelfForUser
+from competition.models import Membership
 
 
 def home(request):
@@ -42,6 +43,14 @@ def login_page(request):
 
 class UserPage(LoginRequiredMixin, SelfForUser, DetailView):
     template_name = 'competition/user_detail.html'
+
+    def get_context_data(self, **kwargs):
+        """Adding user's team membership info to context extra data."""
+        if not self.extra_context:
+            self.extra_context = {}
+        self.extra_context.update({'team': Membership.objects.get(user=self.request.user).team})
+
+        return super().get_context_data(**kwargs)
 
 
 class UserUpdate(LoginRequiredMixin, SelfForUser, UpdateView):
