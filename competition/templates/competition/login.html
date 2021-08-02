@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+
+	<p class="lead">Login 666</p>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form }}
+        <button id="log_in_button" type="submit" action="">Log in</button>
+    </form>
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+{% endblock content %}
