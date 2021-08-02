@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import CheckPoint
 
-# Register your models here.
+
+@admin.register(CheckPoint)
+class AdminCheckpoint(admin.ModelAdmin):
+    """Admin view for Package."""

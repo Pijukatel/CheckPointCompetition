@@ -12,6 +12,11 @@ class Globals(NamedTuple):
     user1_password = 'TestPassword1234'
     user2_name = 'TestName2'
     user2_password = user1_password
+    checkpoint1_name = 'TestCheckPoint1'
+    checkpoint1_description = 'TestDescription'
+    checkpoint1_lon = '21.6543'
+    checkpoint1_lat = '12.3456'
+    checkpoint2_name = 'TestCheckPoint2'
 
 
 G = Globals
