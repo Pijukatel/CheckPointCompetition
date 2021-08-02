@@ -3,7 +3,7 @@
 
     {{ object_list }}
     {% for object in object_list %}
-        <a href="{% url 'checkpoint' object.name %}">Name: {{ object.name }}</a>
+        <p>Name: <a href="{% url 'checkpoint' object.name %}">{{ object.name }}</a></p>
     {% endfor %}
 
 {% endblock content %}

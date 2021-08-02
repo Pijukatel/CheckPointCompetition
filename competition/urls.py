@@ -14,5 +14,5 @@ urlpatterns = [
     path('accounts/users/', ListView.as_view(model=User, template_name='competition/user_list.html'), name='users'),
     path('accounts/user/update/', UserUpdate.as_view(model=User), name='user_update'),
     path('accounts/user/delete/', UserDelete.as_view(), name='user_delete'),
-    path('checkpoints', ListView.as_view(model=CheckPoint, template_name= 'competition/checkpoint_list.html'), name='checkpoints'),
-    path('checkpoint/<int:pk>/', DetailView.as_view(model=CheckPoint, template_name= 'competition/checkpoint_detail.html'), name='checkpoint')]
+    path('checkpoints/', ListView.as_view(model=CheckPoint, template_name= 'competition/checkpoint_list.html'), name='checkpoints'),
+    path('checkpoint/<str:pk>/', DetailView.as_view(model=CheckPoint, template_name= 'competition/checkpoint_detail.html'), name='checkpoint')]
