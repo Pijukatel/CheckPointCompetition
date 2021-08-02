@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 
-def register_test_user(client, username='TestName', password='TestPassword1234'):
+def register_test_user(client, username=G.user1_name, password=G.user1_password):
     response = client.post('/accounts/register/',
                            {'username': username,
                             'password1': password,
@@ -22,11 +22,13 @@ def login_test_user(client, username=G.user1_name, password=G.user1_password):
     return response
 
 
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     'template, url', [
         ('home.html', ''),
         ('register.html', '/accounts/register/'),
-        ('login.html', '/accounts/login/')
+        ('login.html', '/accounts/login/'),
+        ('user_list.html', '/accounts/users/')
     ])
 def test_template_by_url_with_anonymous(client, template, url):
     """Test that template is reachable by using relative url address."""
@@ -55,14 +57,14 @@ def test_register_duplicated_user_denied(client):
     assert isinstance(response.context_data['form'].errors['username'].data[0], ValidationError)
 
 
-@pytest.mark.usefixtures('load_registered_user')
+@pytest.mark.usefixtures('load_registered_user1')
 @pytest.mark.django_db
 def test_login_redirect(client):
     response = login_test_user(client)
     assertTemplateUsed(response, '/'.join([G.APP_NAME, 'user_detail.html']))
 
 
-@pytest.mark.usefixtures('load_registered_user')
+@pytest.mark.usefixtures('load_registered_user1')
 @pytest.mark.django_db
 def test_login(client):
     login_test_user(client)
@@ -71,7 +73,7 @@ def test_login(client):
     assertTemplateUsed(response, '/'.join([G.APP_NAME, 'user_detail.html']))
 
 
-@pytest.mark.usefixtures('load_registered_user')
+@pytest.mark.usefixtures('load_registered_user1')
 @pytest.mark.django_db
 def test_correct_user_detail(client):
     login_test_user(client)
@@ -85,21 +87,58 @@ def test_nonexistent_login(client):
     response = login_test_user(client)
     assert response.status_code == 200
     assertTemplateUsed(response, '/'.join([G.APP_NAME, 'login.html']))
-    assert b'Username or password is incorrect.' in response.content
+    assert bytes('Username or password is incorrect.', response.charset) in response.content
 
 
-@pytest.mark.usefixtures('load_registered_user')
+@pytest.mark.usefixtures('load_registered_user1')
 @pytest.mark.django_db
-def test_unauthorized_user(client):
+def test_unauthenticated_user(client):
     response = client.get('/accounts/user/', follow=True)
     assert response.status_code == 200
     assertTemplateUsed(response, '/'.join([G.APP_NAME, 'login.html']))
 
 
-@pytest.mark.usefixtures('load_registered_user')
+@pytest.mark.usefixtures('load_registered_user1')
 @pytest.mark.django_db
 def test_correct_user_detail(client_with_logged_user1):
     response = client_with_logged_user1.get('/accounts/user/')
     assert response.status_code == 200
     assertTemplateUsed(response, '/'.join([G.APP_NAME, 'user_detail.html']))
     assert bytes(f'{G.user1_name}', response.charset) in response.content
+
+
+@pytest.mark.usefixtures('load_registered_user1')
+@pytest.mark.usefixtures('load_registered_user2')
+@pytest.mark.django_db
+def test_user_list_contain_usernames(client):
+    response = client.get('/accounts/users/')
+    assert response.status_code == 200
+    assert bytes(G.user1_name, encoding=response.charset) in response.content
+    assert bytes(G.user2_name, encoding=response.charset) in response.content
+
+
+@pytest.mark.usefixtures('load_registered_user1')
+@pytest.mark.django_db
+def test_user_update_page(client_with_logged_user1):
+    response = client_with_logged_user1.get('/accounts/user/update/', follow=True)
+    assert response.status_code == 200
+    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'user_form.html']))
+
+
+@pytest.mark.django_db
+def test_user_update_page_unauthenticated_user(client):
+    response = client.get('/accounts/user/update/', follow=True)
+    assert response.status_code == 200
+    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'login.html']))
+
+
+@pytest.mark.usefixtures('load_registered_user1')
+@pytest.mark.django_db
+def test_user_update_first_name(client_with_logged_user1):
+    first_name = 'Anna'
+    response = client_with_logged_user1.post('/accounts/user/update/',
+                                             {'first_name': first_name},
+                                             follow=True)
+    assert response.status_code == 200
+    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'user_detail.html']))
+    assert bytes(f'First name: {first_name}', encoding=response.charset) in response.content

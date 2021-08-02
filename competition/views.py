@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+
+from competition.views_custom_mixins import SelfForUser
 
 
 def home(request):
@@ -37,10 +39,12 @@ def login_page(request):
         return render(request, 'competition/login.html', {'form': AuthenticationForm})
 
 
-class User_Page(LoginRequiredMixin, DetailView):
-    """For user edit and import export of data."""
+class UserPage(LoginRequiredMixin, SelfForUser, DetailView):
     template_name = 'competition/user_detail.html'
 
-    def get_object(self):
-        return self.request.user
+
+class UserPageUpdate(LoginRequiredMixin, SelfForUser, UpdateView):
+    fields = ['first_name']
+    template_name = 'competition/user_form.html'
+    success_url = reverse_lazy('user')
 

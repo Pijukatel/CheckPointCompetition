@@ -13,13 +13,19 @@ def django_db_setup(django_db_setup, django_db_blocker):
     # 'Unused' parameter django_db_setup is internal fixture for creating test database
     # https://pytest-django.readthedocs.io/en/latest/database.html#populate-the-test-database-if-you-don-t-use-transactional-or-live-server
     with django_db_blocker.unblock():
-        call_command('loaddata', 'test_user_x1.json')
+        call_command('loaddata', 'test_user_1.json')
 '''
 
 @pytest.mark.django_db
 @pytest.fixture
-def load_registered_user():
-    call_command('loaddata', 'test_user_x1.json')
+def load_registered_user1():
+    call_command('loaddata', 'test_user_1.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def load_registered_user2():
+    call_command('loaddata', 'test_user_2.json')
 
 
 @pytest.fixture
