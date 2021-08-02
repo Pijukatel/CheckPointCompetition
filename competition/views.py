@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -20,6 +20,7 @@ class RegisterUser(CreateView):
     template_name = 'competition/register.html'
     form_class = UserCreationForm
     success_url = reverse_lazy('login')
+
 
 def login_page(request):
     """Login view."""
@@ -43,8 +44,12 @@ class UserPage(LoginRequiredMixin, SelfForUser, DetailView):
     template_name = 'competition/user_detail.html'
 
 
-class UserPageUpdate(LoginRequiredMixin, SelfForUser, UpdateView):
+class UserUpdate(LoginRequiredMixin, SelfForUser, UpdateView):
     fields = ['first_name']
-    template_name = 'competition/user_form.html'
+    template_name = 'competition/user_update.html'
     success_url = reverse_lazy('user')
 
+
+class UserDelete(LoginRequiredMixin, SelfForUser, DeleteView):
+    template_name = 'competition/user_delete.html'
+    success_url = reverse_lazy('home')

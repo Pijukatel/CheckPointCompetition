@@ -2,7 +2,7 @@ import pytest
 from pytest_django.asserts import assertTemplateUsed
 from .globals_for_tests import G
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 
 def register_test_user(client, username=G.user1_name, password=G.user1_password):
@@ -33,6 +33,34 @@ def login_test_user(client, username=G.user1_name, password=G.user1_password):
 def test_template_by_url_with_anonymous(client, template, url):
     """Test that template is reachable by using relative url address."""
     response = client.get(url, follow=True)
+    assertTemplateUsed(response, '/'.join([G.APP_NAME, template]))
+
+
+@pytest.mark.usefixtures('load_registered_user1')
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    'template, url', [
+        ('user_delete.html', '/accounts/user/delete/'),
+        ('user_update.html', '/accounts/user/update/'),
+    ])
+def test_template_by_url_with_logged_user1(client_with_logged_user1, template, url):
+    """Test that template is reachable by using relative url address when user is logged."""
+    response = client_with_logged_user1.get(url, follow=True)
+    assert response.status_code == 200
+    assertTemplateUsed(response, '/'.join([G.APP_NAME, template]))
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    'template, url', [
+        ('login.html', '/accounts/user/delete/'),
+        ('login.html', '/accounts/user/update/'),
+        ('login.html', '/accounts/user/')
+    ])
+def test_template_by_url_with_anonymous_require_login(client, template, url):
+    """Test redirects to login page for pages that require login."""
+    response = client.get(url, follow=True)
+    assert response.status_code == 200
     assertTemplateUsed(response, '/'.join([G.APP_NAME, template]))
 
 
@@ -92,14 +120,6 @@ def test_nonexistent_login(client):
 
 @pytest.mark.usefixtures('load_registered_user1')
 @pytest.mark.django_db
-def test_unauthenticated_user(client):
-    response = client.get('/accounts/user/', follow=True)
-    assert response.status_code == 200
-    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'login.html']))
-
-
-@pytest.mark.usefixtures('load_registered_user1')
-@pytest.mark.django_db
 def test_correct_user_detail(client_with_logged_user1):
     response = client_with_logged_user1.get('/accounts/user/')
     assert response.status_code == 200
@@ -119,21 +139,6 @@ def test_user_list_contain_usernames(client):
 
 @pytest.mark.usefixtures('load_registered_user1')
 @pytest.mark.django_db
-def test_user_update_page(client_with_logged_user1):
-    response = client_with_logged_user1.get('/accounts/user/update/', follow=True)
-    assert response.status_code == 200
-    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'user_form.html']))
-
-
-@pytest.mark.django_db
-def test_user_update_page_unauthenticated_user(client):
-    response = client.get('/accounts/user/update/', follow=True)
-    assert response.status_code == 200
-    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'login.html']))
-
-
-@pytest.mark.usefixtures('load_registered_user1')
-@pytest.mark.django_db
 def test_user_update_first_name(client_with_logged_user1):
     first_name = 'Anna'
     response = client_with_logged_user1.post('/accounts/user/update/',
@@ -142,3 +147,23 @@ def test_user_update_first_name(client_with_logged_user1):
     assert response.status_code == 200
     assertTemplateUsed(response, '/'.join([G.APP_NAME, 'user_detail.html']))
     assert bytes(f'First name: {first_name}', encoding=response.charset) in response.content
+
+
+@pytest.mark.usefixtures('load_registered_user1')
+@pytest.mark.django_db
+def test_delete_user1_success_redirect(client_with_logged_user1):
+    response = client_with_logged_user1.post('/accounts/user/delete/',
+                                             {},
+                                             follow=True)
+    assert response.status_code == 200
+    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'home.html']))
+
+
+@pytest.mark.usefixtures('load_registered_user1')
+@pytest.mark.django_db
+def test_delete_user1_deleted_from_db(client_with_logged_user1):
+    client_with_logged_user1.post('/accounts/user/delete/',
+                                  {},
+                                  follow=True)
+    with pytest.raises(ObjectDoesNotExist):
+        User.objects.get(username=G.user1_name)
