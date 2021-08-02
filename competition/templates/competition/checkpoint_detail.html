@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <p>Name: {{ object.name }}</p>
+    <p>Description: {{ object.description }}</p>
+    <p>Longitudinal: {{ object.gps_lon }}</p>
+    <p>Lateral: {{ object.gps_lat }}</p>
+    <img src="{{ object.photo.url }}" width="400" height="400"></img>
+
+{% endblock content %}
+

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+
+    {{ object_list }}
+    {% for object in object_list %}
+        <a href="{% url 'checkpoint' object.name %}">Name: {{ object.name }}</a>
+    {% endfor %}
+
+{% endblock content %}
+

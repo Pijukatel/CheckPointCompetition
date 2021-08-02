@@ -16,6 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include,path
 
+from django.conf.urls.static import static
+from django.conf import settings
+
 urlpatterns = [
     path('', include('competition.urls')),
+    path('admin/', admin.site.urls),
 ]
+
+# TEMP for local dev. It will have to be changed when deployed to production
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
