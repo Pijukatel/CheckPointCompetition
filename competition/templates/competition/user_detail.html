@@ -4,7 +4,13 @@
     <div>User: {{ object }}</div>
     <div>Joined: {{ object.date_joined }}</div>
     <div>First name: {{ object.first_name }}</div>
-    <div>Team: {{ view.extra_context.team }}</div>
+    <div>Team:
+        {% if view.extra_context.team  %}
+            {{ view.extra_context.team }} <a href="{% url 'home'%}"> Leave team </a>
+        {% else %}
+            <a href="{% url 'team_create'%}"> Create team </a>
+        {% endif %}
+    </div>
 
 {% endblock content %}
 

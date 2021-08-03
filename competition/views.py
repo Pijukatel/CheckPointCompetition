@@ -78,3 +78,17 @@ class UserUpdate(LoginRequiredMixin, SelfForUser, UpdateView):
 class UserDelete(LoginRequiredMixin, SelfForUser, DeleteView):
     template_name = 'competition/user_delete.html'
     success_url = reverse_lazy('home')
+
+
+class TeamCreate(CreateView):
+    model = Team
+    template_name = 'competition/team_create.html'
+    fields = ['name']
+
+    def form_valid(self, form):
+        """Assign currently signed user to join created team."""
+        response = super().form_valid(form)
+        membership = Membership.objects.get(user=self.request.user)
+        membership.team = form.instance
+        membership.save()
+        return response

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.views.generic import ListView, DetailView
 
 from .models import CheckPoint, Team
-from .views import home, RegisterUser, login_page, UserDetail, UserUpdate, UserDelete, TeamDetail
+from .views import home, RegisterUser, login_page, UserDetail, UserUpdate, UserDelete, TeamDetail, TeamCreate
 
 urlpatterns = [
     path('', home, name='home'),
@@ -16,4 +16,6 @@ urlpatterns = [
     path('accounts/user/delete/', UserDelete.as_view(), name='user_delete'),
     path('checkpoints/', ListView.as_view(model=CheckPoint, template_name= 'competition/checkpoint_list.html'), name='checkpoints'),
     path('checkpoint/<str:pk>/', DetailView.as_view(model=CheckPoint, template_name= 'competition/checkpoint_detail.html'), name='checkpoint'),
-    path('team/<str:pk>/', TeamDetail.as_view(), name='team')]
+    path('team/create/', TeamCreate.as_view(), name='team_create'),
+    path('team/<str:pk>/', TeamDetail.as_view(), name='team'),
+    ]
