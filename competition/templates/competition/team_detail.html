@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <p>Name: {{ object.name }}</p>
+    <p>Confirmed: {{ object.confirmed }}</p>
+    <p>Photo:
+        {% if object.photo %}
+        <img src="{{ object.photo.url }}" width="400" height="400"></img></p>
+        {% endif %}
+    <p>Members: </p>
+    <ul>
+        {% for member in members %}
+            <li>{{ member.username }}</li>
+        {% endfor %}
+    </ul>
+
+{% endblock content %}
+

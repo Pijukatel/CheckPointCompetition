@@ -21,6 +21,16 @@ def django_db_setup(django_db_setup, django_db_blocker):
 def load_registered_user1():
     call_command('loaddata', 'test_user_1.json')
 
+@pytest.mark.django_db
+@pytest.fixture
+def load_registered_user1_with_team1():
+    call_command('loaddata', 'test_user_1_with_team_1.json')
+
+@pytest.mark.django_db
+@pytest.fixture
+def load_registered_users_1_2_with_team1():
+    call_command('loaddata', 'test_users_1_2_with_team_1.json')
+
 
 @pytest.mark.django_db
 @pytest.fixture

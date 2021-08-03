@@ -23,7 +23,7 @@ class Point(models.Model):
 
 class Team(models.Model):
     name = models.CharField(max_length=20, primary_key=True)
-    photo = models.ImageField(upload_to='teams')
+    photo = models.ImageField(upload_to='teams', null=True, blank=True)
     confirmed = models.BooleanField(default=False)
 
 

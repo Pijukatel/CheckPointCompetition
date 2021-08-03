@@ -6,9 +6,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import User
 
 from competition.views_custom_mixins import SelfForUser
-from competition.models import Membership
+from competition.models import Membership, Team
 
 
 def home(request):
@@ -41,17 +42,32 @@ def login_page(request):
         return render(request, 'competition/login.html', {'form': AuthenticationForm})
 
 
-class UserPage(LoginRequiredMixin, SelfForUser, DetailView):
+class UserDetail(LoginRequiredMixin, SelfForUser, DetailView):
     template_name = 'competition/user_detail.html'
 
     def get_context_data(self, **kwargs):
         """Adding user's team membership info to context extra data."""
         if not self.extra_context:
             self.extra_context = {}
-        self.extra_context.update({'team': Membership.objects.get(user=self.request.user).team})
+        # Some users are not members of any team yet.
+        team_name = getattr(Membership.objects.get(user=self.request.user).team, 'name', None)
+        self.extra_context.update({'team': team_name})
 
         return super().get_context_data(**kwargs)
 
+
+class TeamDetail(DetailView):
+    template_name = 'competition/team_detail.html'
+    model = Team
+
+    def get_context_data(self, **kwargs):
+        """Adding team members info to extra context."""
+        if not self.extra_context:
+            self.extra_context = {}
+        members = [User.objects.get(username=team.user) for team in Membership.objects.filter(team=self.object)]
+        self.extra_context.update({'members': members})
+
+        return super().get_context_data(**kwargs)
 
 class UserUpdate(LoginRequiredMixin, SelfForUser, UpdateView):
     fields = ['first_name']
