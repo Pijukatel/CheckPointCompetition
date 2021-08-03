@@ -6,7 +6,7 @@
     <div>First name: {{ object.first_name }}</div>
     <div>Team:
         {% if view.extra_context.team  %}
-            {{ view.extra_context.team }} <a href="{% url 'home'%}"> Leave team </a>
+            {{ view.extra_context.team }} <a href="{% url 'leave_team'%}"> Leave team </a>
         {% else %}
             <a href="{% url 'team_create'%}"> Create team </a>
         {% endif %}
