@@ -1,4 +1,5 @@
 import pytest
+import os
 
 from django.test import Client
 from django.core.management import call_command
@@ -56,3 +57,9 @@ def client_with_logged_user1():
     client = Client()
     client.login(username=G.user1_name, password=G.user1_password)
     return client
+
+@pytest.fixture()
+def delete_test_team_image():
+    """Cleanup fixture to remove test image after uploading it in test."""
+    yield None
+    os.remove(f'static/images/teams/{G.test_image_name}')

@@ -113,9 +113,20 @@ def test_team_update_unauthenticated_redirect(client):
     assertTemplateUsed(response, '/'.join([G.APP_NAME, 'login.html']))
 
 
+@pytest.mark.usefixtures('delete_test_team_image')
 @pytest.mark.usefixtures('load_registered_user1_with_team1')
 @pytest.mark.django_db
-def test_team_update_photo(client_with_logged_user1):
-    assert False
-    with open('competition/fixtures/test_image.jpg') as fp:
-        client_with_logged_user1.post(f'/team/{G.team1_name}/update/', {'photo': fp}, follow=True)
+def test_team_update_photo_redirect(client_with_logged_user1):
+    with open('competition/fixtures/test_image.jpg', 'rb') as fp:
+        response = client_with_logged_user1.post(f'/team/{G.team1_name}/update/', {'photo': fp}, follow=True)
+        assert response.status_code == 200
+        assertTemplateUsed(response, '/'.join([G.APP_NAME, 'team_detail.html']))
+
+
+@pytest.mark.usefixtures('delete_test_team_image')
+@pytest.mark.usefixtures('load_registered_user1_with_team1')
+@pytest.mark.django_db
+def test_team_update_photo_team_updated(client_with_logged_user1):
+    with open('competition/fixtures/test_image.jpg', 'rb') as fp:
+        response = client_with_logged_user1.post(f'/team/{G.team1_name}/update/', {'photo': fp}, follow=True)
+        assert bytes(f'<img src="/images/teams/{G.test_image_name}', response.charset) in response.content
