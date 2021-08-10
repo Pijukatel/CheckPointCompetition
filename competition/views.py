@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 
 from competition.forms import AddMembersForm
-from competition.views_custom_mixins import SelfForUser
+from competition.views_custom_mixins import SelfForUser, OnlyTeamMemberMixin, NoEditForConfirmed
 from competition.models import Membership, Team
 
 
@@ -58,7 +58,7 @@ def add_team_member(request, pk):
             print(form.errors)
 
     context = {"form": form}
-    return render(request, "competition/team_add_memeber.html", context)
+    return render(request, "competition/team_add_member.html", context)
 
 
 class RegisterUser(CreateView):
@@ -139,18 +139,13 @@ class TeamCreate(CreateView):
         return response
 
 
-class OnlyTeamMemberMixin():
-    """Allow view only for user that is team member."""
-
-    def dispatch(self, request, *args, **kwargs):
-        team = Team.objects.get(name=kwargs['pk'])
-        membership = Membership.objects.filter(user=request.user, team=team).exists()
-        if membership:
-            return super().dispatch(request, *args, **kwargs)
-        return self.handle_no_permission()
-
-
-class TeamUpdate(LoginRequiredMixin, OnlyTeamMemberMixin, UpdateView):
+class TeamUpdate(LoginRequiredMixin, OnlyTeamMemberMixin, NoEditForConfirmed, UpdateView):
     model = Team
     template_name = 'competition/team_update.html'
     fields = ['photo']
+
+
+class TeamDelete(LoginRequiredMixin, OnlyTeamMemberMixin, DeleteView):
+    model = Team
+    template_name = "competition/team_delete.html"
+    success_url = reverse_lazy("home")

@@ -1,11 +1,11 @@
-import pytest
 from unittest.mock import patch
-from pytest_django.asserts import assertTemplateUsed
-from .globals_for_tests import G
-from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.core.files.uploadedfile import SimpleUploadedFile
 
+import pytest
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
+from pytest_django.asserts import assertTemplateUsed
+
+from .globals_for_tests import G
 from ..models import Team, Membership, delete_empty_teams
 
 
@@ -44,10 +44,10 @@ def test_team_detail_show_team_members(client):
 @pytest.mark.django_db
 def test_team_detail_show_leave_link_only_to_logged_user(client_with_logged_user1):
     response = client_with_logged_user1.get(f'/team/{G.team1_name}/', follow=True)
-    bytes(f'{G.user1_name}\n                \n                     <a href="/team/leave/"',
-          encoding=response.charset) in response.content
-    bytes(f'{G.user2_name}\n                \n                     <a href="/team/leave/"',
-          encoding=response.charset) not in response.content
+    assert bytes(f'{G.user1_name}\n                \n                     <a href="/team/leave/"',
+                 encoding=response.charset) in response.content
+    assert bytes(f'{G.user2_name}\n                \n                     <a href="/team/leave/"',
+                 encoding=response.charset) not in response.content
 
 
 @pytest.mark.usefixtures('load_registered_user1')
@@ -124,6 +124,13 @@ def test_team_update(client_with_logged_user1):
     assertTemplateUsed(response, '/'.join([G.APP_NAME, 'team_update.html']))
 
 
+@pytest.mark.usefixtures('load_registered_user1_with_confirmed_team1')
+@pytest.mark.django_db
+def test_confirmed_team_update_redirect(client_with_logged_user1):
+    response = client_with_logged_user1.get(f'/team/{G.team1_name}/update/', follow=True)
+    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'team_detail.html']))
+
+
 @pytest.mark.usefixtures('load_registered_user1_with_team1')
 @pytest.mark.django_db
 def test_team_update_unauthenticated_redirect(client):
@@ -135,6 +142,7 @@ def test_team_update_unauthenticated_redirect(client):
 @pytest.mark.usefixtures('load_registered_user2')
 @pytest.mark.django_db
 def test_team_update_unauthorized(client_with_logged_user2):
+    """Only team members can edit team."""
     response = client_with_logged_user2.get(f'/team/{G.team1_name}/update/', follow=True)
     assert response.status_code == 403
 
@@ -177,9 +185,41 @@ def test_auto_delete_empty_team_called_on_membership_save():
     assert mocked.called
 
 
-def test_team_list_view():
-    assert False
+@pytest.mark.django_db
+def test_team_list_view_template(client):
+    response = client.get('/teams/', follow=True)
+    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'team_list.html']))
 
 
-def test_team_update_only_members():
-    assert False
+@pytest.mark.usefixtures('load_team2')
+@pytest.mark.usefixtures('load_registered_user1_with_team1')
+@pytest.mark.django_db
+def test_team_list_view_template_contains_teams(client):
+    response = client.get('/teams/', follow=True)
+    assert bytes(f'{G.team1_name}', response.charset) in response.content
+    assert bytes(f'{G.team2_name}', response.charset) in response.content
+
+
+@pytest.mark.usefixtures('load_registered_user1_with_team1')
+@pytest.mark.django_db
+def test_team_delete_template(client_with_logged_user1):
+    response = client_with_logged_user1.get(f'/team/{G.team1_name}/delete/', follow=True)
+    assertTemplateUsed(response, '/'.join([G.APP_NAME, 'team_delete.html']))
+
+
+@pytest.mark.usefixtures('load_registered_user1_with_team1')
+@pytest.mark.usefixtures('load_registered_user2')
+@pytest.mark.django_db
+def test_team_delete_unauthorized(client_with_logged_user2):
+    response = client_with_logged_user2.get(f'/team/{G.team1_name}/delete/', follow=True)
+    assert response.status_code == 403
+
+
+@pytest.mark.usefixtures('load_registered_user1_with_team1')
+@pytest.mark.django_db
+def test_delete_team1_deleted_from_db(client_with_logged_user1):
+    client_with_logged_user1.post(f'/team/{G.team1_name}/delete/',
+                                  {},
+                                  follow=True)
+    with pytest.raises(ObjectDoesNotExist):
+        Team.objects.get(name=G.team1_name)
