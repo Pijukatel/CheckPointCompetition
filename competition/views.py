@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
-from django.views.generic import DetailView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic import DetailView, TemplateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView, BaseUpdateView, FormView
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,7 +11,7 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 
-from competition.forms import AddMembersForm
+from competition.forms import AddMembersForm, ConfirmPhoto
 from competition.views_custom_mixins import SelfForUser, OnlyTeamMemberMixin, NoEditForConfirmed
 from competition.models import Membership, Team
 
@@ -20,6 +20,39 @@ def home(request):
     """Entry point."""
     return render(request, "competition/home.html")
 
+
+class ConfirmationView(UpdateView):
+    #TODO UpdateView with custom form???
+    model = Team
+
+    template_name = "competition/team_photo_confirmation.html"
+
+    def get_form(self, form_class=None):
+        return ConfirmPhoto
+
+    def get_success_url(self):
+        return reverse_lazy("team", kwargs={'pk': self.checked_object.name})
+
+    def get_context_data(self, **kwargs):
+        """Adding photo to decide if it is confirmed or not."""
+        if not self.extra_context:
+            self.extra_context = {}
+        self.extra_context.update({"photo": self.checked_object.photo})
+        return super().get_context_data(**kwargs)
+
+    def get_object(self):
+        """Get oldest object and save it to renew confirmation_date (put to the end of queue).
+
+        This is done to imitate reverse queue with least amount of effort. Parallel users could be confirming photos
+        at the same time. Each time one user asks for new photo to confirm it, it is given and moved to the end of the
+        queue by changing it's confirmation date.
+        """
+        self.checked_object = self.model.objects.filter(confirmed=False).earliest('confirmation_date')
+        self.checked_object.save()
+        return self.checked_object
+
+    def clean(self):
+        super().clean()
 
 @login_required
 def leave_team(request):

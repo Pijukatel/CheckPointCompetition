@@ -1,5 +1,17 @@
 from django import forms
 from .models import Membership
+from django import forms
+
+
+class ConfirmPhoto(forms.Form):
+    your_name = forms.CharField(label='Your name', max_length=100)
+
+    def clean(self):
+        if 'newsletter_sub' in self.data:
+            pass
+        elif 'newsletter_unsub' in self.data:
+            pass
+
 
 
 class AddMembersForm(forms.Form):
