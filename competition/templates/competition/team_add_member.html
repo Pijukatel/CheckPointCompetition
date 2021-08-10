@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+
+	<p class="lead">Add member to team</p>
+    <form method="POST">
+        {% csrf_token  %}
+        {{ form.as_p }}
+        <input id="add_member_button" type="submit" name="add_member">
+    </form>
+
+{% endblock content %}

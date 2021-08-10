@@ -17,6 +17,9 @@ class Globals(NamedTuple):
     checkpoint1_lon = '21.6543'
     checkpoint1_lat = '12.3456'
     checkpoint2_name = 'TestCheckPoint2'
+    team1_name = 'TestTeam1'
+    team2_name = 'TestTeam2'
+    test_image_name = 'test_image.jpg'
 
 
 G = Globals

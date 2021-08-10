@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <p>Name: {{ object.name }}</p>
+    <p>Confirmed: {{ object.confirmed }}</p>
+    <p>Photo:
+        {% if object.photo %}
+        <img src="{{ object.photo.url }}" width="400" height="400"></img></p>
+        {% endif %}
+    <p>Members: </p>
+    <ul>
+        {% for member in members %}
+            <li>{{ member.username }}
+                {% if member.username == user.username %}
+                    {{ view.extra_context.team }} <a href="{% url 'leave_team'%}"> Leave team </a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+{% endblock content %}
+
