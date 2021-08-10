@@ -11,7 +11,6 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 
-
 from competition.forms import AddMembersForm
 from competition.views_custom_mixins import SelfForUser
 from competition.models import Membership, Team
@@ -20,6 +19,7 @@ from competition.models import Membership, Team
 def home(request):
     """Entry point."""
     return render(request, "competition/home.html")
+
 
 @login_required
 def leave_team(request):
@@ -32,10 +32,11 @@ def leave_team(request):
     membership.save()
 
     # Delete empty team
-    if not(Membership.objects.filter(team=team)):
+    if not (Membership.objects.filter(team=team)):
         team.delete()
 
     return HttpResponseRedirect(reverse("user"))
+
 
 @login_required
 def add_team_member(request, pk):
@@ -138,7 +139,18 @@ class TeamCreate(CreateView):
         return response
 
 
-class TeamUpdate(LoginRequiredMixin, UpdateView):
+class OnlyTeamMemberMixin():
+    """Allow view only for user that is team member."""
+
+    def dispatch(self, request, *args, **kwargs):
+        team = Team.objects.get(name=kwargs['pk'])
+        membership = Membership.objects.filter(user=request.user, team=team).exists()
+        if membership:
+            return super().dispatch(request, *args, **kwargs)
+        return self.handle_no_permission()
+
+
+class TeamUpdate(LoginRequiredMixin, OnlyTeamMemberMixin, UpdateView):
     model = Team
     template_name = 'competition/team_update.html'
     fields = ['photo']

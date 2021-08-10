@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
+
+
 # Create your models here.
 
 
@@ -34,7 +36,7 @@ class Team(models.Model):
 class Membership(models.Model):
     """Intermediate model for user being able to be member of a group."""
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    team = models.ForeignKey(Team,on_delete=models.CASCADE, null=True, blank=True)
+    team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 @receiver(post_save, sender=User)
@@ -49,3 +51,17 @@ def save_user_profile(sender, instance, **kwargs):
     """Using signals to save membership when user is saved."""
     if not instance.is_superuser:
         instance.membership.save()
+
+
+@receiver(post_save, sender=Membership)
+def after_membership_save(sender, instance, **kwargs):
+    delete_empty_teams()
+
+
+def delete_empty_teams():
+    """Using signals to check for teams without membership and deleting them."""
+    inhabited_teams = {membership.team for membership in Membership.objects.filter(team__membership__isnull=False)}
+    all_teams = set(Team.objects.all())
+    empty_teams = all_teams - inhabited_teams
+    for team in empty_teams:
+        team.delete()
