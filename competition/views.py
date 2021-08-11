@@ -1,19 +1,19 @@
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy, reverse
-from django.views.generic import DetailView, TemplateView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView, BaseUpdateView, FormView
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy, reverse
+from django.views.generic import DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from competition.forms import AddMembersForm, ConfirmPhoto
-from competition.views_custom_mixins import SelfForUser, OnlyTeamMemberMixin, NoEditForConfirmed
 from competition.models import Membership, Team
+from competition.views_custom_mixins import SelfForUser, OnlyTeamMemberMixin, NoEditForConfirmed
 
 
 def home(request):
@@ -22,13 +22,15 @@ def home(request):
 
 
 class ConfirmationView(UpdateView):
-    #TODO UpdateView with custom form???
+    # TODO UpdateView with custom model and template and form
     model = Team
-
     template_name = "competition/team_photo_confirmation.html"
+    template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
+    form_class = ConfirmPhoto
 
-    def get_form(self, form_class=None):
-        return ConfirmPhoto
+    def __init__(self, **kwargs):
+        self._get_object()
+        super().__init__(**kwargs)
 
     def get_success_url(self):
         return reverse_lazy("team", kwargs={'pk': self.checked_object.name})
@@ -40,19 +42,38 @@ class ConfirmationView(UpdateView):
         self.extra_context.update({"photo": self.checked_object.photo})
         return super().get_context_data(**kwargs)
 
-    def get_object(self):
+    def get_object(self, **kwargs):
+        return self.checked_object
+
+    def _get_object(self):
         """Get oldest object and save it to renew confirmation_date (put to the end of queue).
 
         This is done to imitate reverse queue with least amount of effort. Parallel users could be confirming photos
         at the same time. Each time one user asks for new photo to confirm it, it is given and moved to the end of the
         queue by changing it's confirmation date.
         """
-        self.checked_object = self.model.objects.filter(confirmed=False).earliest('confirmation_date')
-        self.checked_object.save()
-        return self.checked_object
+        objects_to_check = self.model.objects.filter(confirmed=False).exclude(photo='')
+        if objects_to_check.exists():
+            self.checked_object = objects_to_check.earliest('confirmation_date')
+            self.checked_object.save()
 
-    def clean(self):
-        super().clean()
+    def _anything_to_check(self):
+        if hasattr(self, "checked_object"):
+            return True
+        return False
+
+    def get(self, request, *args, **kwargs):
+        """Handle GET requests only if there is object to check, otherwise redirect."""
+        if self._anything_to_check():
+            return super().get(request, *args, **kwargs)
+        return render(request, self.template_name_when_nothing_to_check)
+
+    def post(self, request, *args, **kwargs):
+        """Handle POST requests only if there is object to check, otherwise redirect."""
+        if self._anything_to_check():
+            return super().post(request, *args, **kwargs)
+        return render(request, self.template_name_when_nothing_to_check)
+
 
 @login_required
 def leave_team(request):

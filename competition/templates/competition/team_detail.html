@@ -3,10 +3,18 @@
 
     <p>Name: {{ object.name }}</p>
     <p>Confirmed: {{ object.confirmed }}</p>
-    <p>Photo:
-        {% if object.photo %}
-        <img src="{{ object.photo.url }}" width="400" height="400"></img></p>
+    {% if not object.confirmed %}
+        {% if object.deny_reason %}
+            Photo deny reason: {{ object.deny_reason }}
+        {% else %}
+            Waiting for confirmation.
         {% endif %}
+    {% endif %}
+
+    <p>Photo:
+    {% if object.photo %}
+        <img src="{{ object.photo.url }}" width="400" height="400"></img></p>
+    {% endif %}
     <p>Members: </p>
     <ul>
         {% for member in members %}

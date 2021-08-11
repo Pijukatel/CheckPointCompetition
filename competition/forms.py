@@ -1,17 +1,21 @@
 from django import forms
-from .models import Membership
+from .models import Membership, Team
 from django import forms
 
 
-class ConfirmPhoto(forms.Form):
-    your_name = forms.CharField(label='Your name', max_length=100)
+class ConfirmPhoto(forms.ModelForm):
 
     def clean(self):
-        if 'newsletter_sub' in self.data:
-            pass
-        elif 'newsletter_unsub' in self.data:
-            pass
+        if self.data["Confirm photo"] == "True":
+            self.cleaned_data["confirmed"] = True
+            self.cleaned_data["deny_reason"] = ""
 
+    class Meta:
+        model = Team
+        fields = ["deny_reason", "confirmed"]
+        widgets = {
+            "confirmed": forms.HiddenInput(),
+        }
 
 
 class AddMembersForm(forms.Form):

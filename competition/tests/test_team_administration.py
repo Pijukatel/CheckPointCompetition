@@ -191,7 +191,7 @@ def test_team_list_view_template(client):
     assertTemplateUsed(response, '/'.join([G.APP_NAME, 'team_list.html']))
 
 
-@pytest.mark.usefixtures('load_team2')
+@pytest.mark.usefixtures('load_registered_user2_with_team2')
 @pytest.mark.usefixtures('load_registered_user1_with_team1')
 @pytest.mark.django_db
 def test_team_list_view_template_contains_teams(client):

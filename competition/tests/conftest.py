@@ -49,6 +49,18 @@ def load_team2():
 
 @pytest.mark.django_db
 @pytest.fixture
+def load_registered_user2_with_team2():
+    call_command('loaddata', 'test_user_2_with_team_2.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def load_registered_user2_with_team2_no_photo():
+    call_command('loaddata', 'test_user_2_with_team_2_no_photo.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
 def load_registered_user2():
     call_command('loaddata', 'test_user_2.json')
 

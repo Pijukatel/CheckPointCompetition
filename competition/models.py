@@ -29,6 +29,7 @@ class Team(models.Model):
     photo = models.ImageField(upload_to='teams', null=True, blank=True)
     confirmed = models.BooleanField(default=False)
     confirmation_date = models.DateTimeField(auto_now=True)
+    deny_reason = models.CharField(max_length=150, null=True, blank=True)
 
     def get_absolute_url(self):
         return reverse('team', kwargs={'pk': self.name})
