@@ -15,6 +15,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from competition.forms import AddMembersForm, ConfirmPhoto
 from competition.models import Membership, Team
+from competition.utils import staff_member_required_message
 from competition.views_custom_mixins import SelfForUser, OnlyTeamMemberMixin, NoEditForConfirmed
 
 
@@ -23,8 +24,8 @@ def home(request):
     return render(request, "competition/home.html")
 
 
-@method_decorator(staff_member_required(login_url='login'), name='get')
-@method_decorator(staff_member_required(login_url='login'), name='post')
+@method_decorator([staff_member_required_message, staff_member_required(login_url="login")], name="get")
+@method_decorator([staff_member_required_message, staff_member_required(login_url="login")], name="post")
 class ConfirmationView(UpdateView):
     # TODO UpdateView with custom model and template and form
     model = Team
