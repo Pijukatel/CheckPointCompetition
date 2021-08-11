@@ -4,7 +4,7 @@ from django.views.generic import ListView, DetailView
 
 from .models import CheckPoint, Team
 from .views import (home, RegisterUser, login_page, UserDetail, UserUpdate, UserDelete, TeamDetail, TeamCreate,
-                    leave_team, add_team_member, TeamUpdate, TeamDelete)
+                    leave_team, add_team_member, TeamUpdate, TeamDelete, ConfirmationView)
 
 urlpatterns = [
     path('', home, name='home'),
@@ -20,10 +20,10 @@ urlpatterns = [
          DetailView.as_view(model=CheckPoint, template_name='competition/checkpoint_detail.html'), name='checkpoint'),
     path('team/create/', TeamCreate.as_view(), name='team_create'),
     path('team/leave/', leave_team, name='leave_team'),
+    path('team/photo-confirm/', ConfirmationView.as_view(), name='team_photo_confirm'),
     path('team/<str:pk>/', TeamDetail.as_view(), name='team'),
     path('team/<str:pk>/update/', TeamUpdate.as_view(), name='team_update'),
     path('team/<str:pk>/delete/', TeamDelete.as_view(), name='team_delete'),
     path('team/<str:pk>/add_member/', add_team_member, name='add_team_member'),
     path('teams/', ListView.as_view(model=Team, template_name='competition/team_list.html'), name='teams'),
-
 ]

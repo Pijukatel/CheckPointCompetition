@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+    <p>{{ object }}</p>
+    <img src="{{ view.extra_context.photo.url }}" width="400" height="400"></img></p>
+
+    <form method="POST">
+        {% csrf_token  %}
+        {{ form.as_p }}
+        <input id="confirm_button" type="submit" name="Confirm photo" value="True">
+        <input id="deny_button" type="submit" name="Confirm photo" value="False">
+    </form>
+
+{% endblock content %}
+
