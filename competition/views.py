@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.contrib.admin.views.decorators import staff_member_required
+from django.utils.decorators import method_decorator
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -21,6 +23,8 @@ def home(request):
     return render(request, "competition/home.html")
 
 
+@method_decorator(staff_member_required(login_url='login'), name='get')
+@method_decorator(staff_member_required(login_url='login'), name='post')
 class ConfirmationView(UpdateView):
     # TODO UpdateView with custom model and template and form
     model = Team

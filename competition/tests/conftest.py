@@ -67,6 +67,12 @@ def load_registered_user2():
 
 @pytest.mark.django_db
 @pytest.fixture
+def load_registered_user_with_is_staff():
+    call_command('loaddata', 'test_user_with_is_staff.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
 def load_checkpoint1():
     call_command('loaddata', 'test_checkpoint_1.json')
 
@@ -90,6 +96,14 @@ def client_with_logged_user2():
     """Return client with logged in user2."""
     client = Client()
     client.login(username=G.user2_name, password=G.user2_password)
+    return client
+
+
+@pytest.fixture
+def client_with_logged_user_staff(load_registered_user_with_is_staff):
+    """Return client with logged in user with is_staff=True."""
+    client = Client()
+    client.login(username=G.user_staff_name, password=G.user_staff_password)
     return client
 
 
