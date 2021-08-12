@@ -46,6 +46,16 @@ def test_confirm_post_message_for_non_staff_user(client_with_logged_user1):
 
 @pytest.mark.usefixtures("load_registered_user1_with_team1")
 @pytest.mark.django_db
+def test_confirm_post_no_message_for_staff_user(client_with_logged_user_staff):
+    response = client_with_logged_user_staff.post("/team/photo-confirm/",
+                                                  {"Confirm photo": "True"},
+                                                  follow=True)
+    assert bytes("Only staff members can confirm photos. Log in as staff member.",
+                 encoding=response.charset) not in response.content
+
+
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
 def test_confirm_template(client_with_logged_user_staff):
     response = client_with_logged_user_staff.get("/team/photo-confirm/", follow=True)
     assertTemplateUsed(response, "/".join([G.APP_NAME, "team_photo_confirmation.html"]))
@@ -64,6 +74,14 @@ def test_confirm_message_for_non_staff_user(client_with_logged_user1):
     response = client_with_logged_user1.get("/team/photo-confirm/", follow=True)
     assert bytes("Only staff members can confirm photos. Log in as staff member.",
                  encoding=response.charset) in response.content
+
+
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+def test_confirm_no_message_for_staff_user(client_with_logged_user_staff):
+    response = client_with_logged_user_staff.get("/team/photo-confirm/", follow=True)
+    assert bytes("Only staff members can confirm photos. Log in as staff member.",
+                 encoding=response.charset) not in response.content
 
 
 @pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
