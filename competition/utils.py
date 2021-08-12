@@ -1,4 +1,8 @@
 from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+
+from competition.models import Team, Membership
 
 
 def user_is_not_staff(request):
@@ -23,3 +27,26 @@ staff_member_required_message = message_decorator_factory(
     messages.INFO,
     "Only staff members can confirm photos. Log in as staff member.",
     user_is_not_staff)
+
+
+def only_team_member(func):
+    def _only_team_member(request, *args, **kwargs):
+        """Only team members can continue.
+        Redirect others to login and give explanation message."""
+
+        if "team" in kwargs:
+            team = Team.objects.get(name=kwargs["team"])
+        else:
+            team = Team.objects.get(name=kwargs["pk"])
+
+        membership = Membership.objects.filter(user=request.user, team=team)
+
+        if membership.exists():
+            return func(request, *args, **kwargs)
+
+        messages.add_message(request,
+                             messages.INFO,
+                             "Only team members can do that. Log in as member of that team.")
+        return HttpResponseRedirect(reverse("login"))
+
+    return _only_team_member

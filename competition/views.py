@@ -6,21 +6,22 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
+from django.utils.decorators import method_decorator
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from competition.forms import AddMembersForm, ConfirmPhoto
 from competition.models import Membership, Team, Point
-from competition.views_custom_mixins import SelfForUser, OnlyTeamMemberMixin, NoEditForConfirmed
+from competition.utils import only_team_member
+from competition.views_custom_mixins import SelfForUser, OnlyTeamMemberMixin, NoEditForConfirmed, GetPoint
 from competition.views_generic import ConfirmationView
 
 
 def home(request):
     """Entry point."""
     return render(request, "competition/home.html")
-
 
 
 class TeamPhotoConfirmationView(ConfirmationView):
@@ -54,6 +55,7 @@ def leave_team(request):
     return HttpResponseRedirect(reverse("user"))
 
 
+# todo HANDLE BY DECORATOR AS OTHER SIMILAR AUTHORIZTION STUFF
 @login_required
 def add_team_member(request, pk):
     """Only existing members of team can add team members."""
@@ -155,6 +157,7 @@ class TeamCreate(CreateView):
         return response
 
 
+# todo ONLY TEAM MEMEBER CAN UPDATE TEAM
 class TeamUpdate(LoginRequiredMixin, OnlyTeamMemberMixin, NoEditForConfirmed, UpdateView):
     model = Team
     template_name = "competition/team_update.html"
@@ -167,19 +170,15 @@ class TeamDelete(LoginRequiredMixin, OnlyTeamMemberMixin, DeleteView):
     success_url = reverse_lazy("home")
 
 
-class PointCreate(CreateView):
+@method_decorator(only_team_member, name="post")
+@method_decorator(only_team_member, name="get")
+class PointUpdate(GetPoint, UpdateView):
     model = Point
-    fields = ["photo", "checkpoint"]
+    fields = ["photo"]
 
-    def form_valid(self, form):
-        """Assign currently signed user's team to point."""
-        form.instance.team = Membership.objects.get(user=self.request.user).team
-        response = super().form_valid(form)
-        return response
 
-class PointDetail(DetailView):
+class PointDetail(GetPoint, DetailView):
     model = Point
-
 
     def get_context_data(self, **kwargs):
         """Adding team members info to extra context."""
@@ -187,12 +186,6 @@ class PointDetail(DetailView):
             self.extra_context = {}
         team_photo = self.object.team.photo
         checkpoint_photo = self.object.checkpoint.photo
-        self.extra_context.update({"team_photo": team_photo, "checkpoint_photo": checkpoint_photo,})
+        self.extra_context.update({"team_photo": team_photo, "checkpoint_photo": checkpoint_photo, })
 
         return super().get_context_data(**kwargs)
-
-    def get_object(self, queryset=None):
-        """Get object by it's name and owner."""
-        return get_object_or_404(self.model,
-                                 team__name=self.kwargs.get('team'),
-                                 checkpoint_id=self.kwargs.get('checkpoint'))

@@ -1,4 +1,5 @@
 from django.http import HttpResponsePermanentRedirect
+from django.shortcuts import get_object_or_404
 
 from competition.models import Team, Membership
 
@@ -29,3 +30,11 @@ class NoEditForConfirmed:
         if Team.objects.get(name=kwargs['pk']).confirmed:
             return HttpResponsePermanentRedirect(self.url)
         return super().get(request, *args, **kwargs)
+
+
+class GetPoint:
+    def get_object(self, queryset=None):
+        """Get object by it's name and owner."""
+        return get_object_or_404(self.model,
+                                 team__name=self.kwargs.get('team'),
+                                 checkpoint_id=self.kwargs.get('checkpoint'))

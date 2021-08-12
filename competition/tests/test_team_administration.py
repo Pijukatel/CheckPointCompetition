@@ -223,3 +223,7 @@ def test_delete_team1_deleted_from_db(client_with_logged_user1):
                                   follow=True)
     with pytest.raises(ObjectDoesNotExist):
         Team.objects.get(name=G.team1_name)
+
+
+def test_confirmed_team_can_not_be_updated():
+    assert False

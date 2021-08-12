@@ -40,13 +40,14 @@ class Point(models.Model):
         return reverse("point", kwargs={"team": self.team_id,
                                         "checkpoint": self.checkpoint_id})
 
-    class Meta():
+    class Meta:
         """Unique point for each team and checkpoint."""
         constraints = [
             models.UniqueConstraint(
                 fields=["team", "checkpoint"],
                 name="%(app_label)s_%(class)s_one_per_team_and_checkpoint"),
         ]
+
 
 class Membership(models.Model):
     """Intermediate model for user being able to be member of a group."""
@@ -71,6 +72,21 @@ def save_user_profile(sender, instance, **kwargs):
 @receiver(post_save, sender=Membership)
 def after_membership_save(sender, instance, **kwargs):
     delete_empty_teams()
+
+
+@receiver(post_save, sender=Team)
+def after_team_save(sender, instance, **kwargs):
+    """Once team is confirmed prepare all it's points.
+
+    This should happen only once as team should be locked for editing after confirmation."""
+    if instance.confirmed:
+        create_team_points_for_each_checkpoint(instance)
+
+
+def create_team_points_for_each_checkpoint(team):
+    """This function creates empty points for each checkpoint."""
+    for checkpoint in CheckPoint.objects.all():
+        Point(team=team, checkpoint=checkpoint).save()
 
 
 def delete_empty_teams():
