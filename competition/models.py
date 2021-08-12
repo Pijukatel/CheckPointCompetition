@@ -16,14 +16,6 @@ class CheckPoint(models.Model):
     photo = models.ImageField(upload_to='checkpoints')
 
 
-class Point(models.Model):
-    photo = models.ImageField(upload_to='points')
-    checkpoint = models.ForeignKey(
-        CheckPoint, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    confirmed = models.BooleanField(default=False)
-
-
 class Team(models.Model):
     name = models.CharField(max_length=20, primary_key=True)
     photo = models.ImageField(upload_to='teams', null=True, blank=True)
@@ -34,6 +26,26 @@ class Team(models.Model):
     def get_absolute_url(self):
         return reverse('team', kwargs={'pk': self.name})
 
+
+class Point(models.Model):
+    photo = models.ImageField(upload_to='points')
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    checkpoint = models.ForeignKey(
+        CheckPoint, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    confirmed = models.BooleanField(default=False)
+    confirmation_date = models.DateTimeField(auto_now=True)
+
+    def get_absolute_url(self):
+        return reverse('point', kwargs={'pk': self.id})
+
+    class Meta():
+        """Unique point for each team and checkpoint."""
+        constraints = [
+            models.UniqueConstraint(
+                fields=['team', 'checkpoint'],
+                name='%(app_label)s_%(class)s_one_per_team_and_checkpoint'),
+        ]
 
 class Membership(models.Model):
     """Intermediate model for user being able to be member of a group."""

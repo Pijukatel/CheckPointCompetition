@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+
+	<p class="lead">Create point</p>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token  %}
+        {{ form.as_p }}
+        <input id="create_point_button" type="submit" name="Create point">
+    </form>
+
+{% endblock content %}

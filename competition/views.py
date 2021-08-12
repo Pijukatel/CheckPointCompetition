@@ -4,8 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.contrib.admin.views.decorators import staff_member_required
-from django.utils.decorators import method_decorator
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -14,9 +12,9 @@ from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from competition.forms import AddMembersForm, ConfirmPhoto
-from competition.models import Membership, Team
-from competition.utils import staff_member_required_message
+from competition.models import Membership, Team, Point
 from competition.views_custom_mixins import SelfForUser, OnlyTeamMemberMixin, NoEditForConfirmed
+from competition.views_generic import ConfirmationView
 
 
 def home(request):
@@ -24,60 +22,19 @@ def home(request):
     return render(request, "competition/home.html")
 
 
-@method_decorator([staff_member_required_message, staff_member_required(login_url="login")], name="get")
-@method_decorator([staff_member_required_message, staff_member_required(login_url="login")], name="post")
-class ConfirmationView(UpdateView):
-    # TODO UpdateView with custom model and template and form
+
+class TeamPhotoConfirmationView(ConfirmationView):
     model = Team
     template_name = "competition/team_photo_confirmation.html"
     template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
     form_class = ConfirmPhoto
 
-    def __init__(self, **kwargs):
-        self._get_object()
-        super().__init__(**kwargs)
 
-    def get_success_url(self):
-        return reverse_lazy("team", kwargs={'pk': self.checked_object.name})
-
-    def get_context_data(self, **kwargs):
-        """Adding photo to decide if it is confirmed or not."""
-        if not self.extra_context:
-            self.extra_context = {}
-        self.extra_context.update({"photo": self.checked_object.photo})
-        return super().get_context_data(**kwargs)
-
-    def get_object(self, **kwargs):
-        return self.checked_object
-
-    def _get_object(self):
-        """Get oldest object and save it to renew confirmation_date (put to the end of queue).
-
-        This is done to imitate reverse queue with least amount of effort. Parallel users could be confirming photos
-        at the same time. Each time one user asks for new photo to confirm it, it is given and moved to the end of the
-        queue by changing it's confirmation date.
-        """
-        objects_to_check = self.model.objects.filter(confirmed=False).exclude(photo='')
-        if objects_to_check.exists():
-            self.checked_object = objects_to_check.earliest('confirmation_date')
-            self.checked_object.save()
-
-    def _anything_to_check(self):
-        if hasattr(self, "checked_object"):
-            return True
-        return False
-
-    def get(self, request, *args, **kwargs):
-        """Handle GET requests only if there is object to check, otherwise redirect."""
-        if self._anything_to_check():
-            return super().get(request, *args, **kwargs)
-        return render(request, self.template_name_when_nothing_to_check)
-
-    def post(self, request, *args, **kwargs):
-        """Handle POST requests only if there is object to check, otherwise redirect."""
-        if self._anything_to_check():
-            return super().post(request, *args, **kwargs)
-        return render(request, self.template_name_when_nothing_to_check)
+class PointPhotoConfirmationView(ConfirmationView):
+    model = Point
+    template_name = "competition/point_photo_confirmation.html"
+    template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
+    form_class = ConfirmPhoto
 
 
 @login_required
@@ -200,11 +157,23 @@ class TeamCreate(CreateView):
 
 class TeamUpdate(LoginRequiredMixin, OnlyTeamMemberMixin, NoEditForConfirmed, UpdateView):
     model = Team
-    template_name = 'competition/team_update.html'
-    fields = ['photo']
+    template_name = "competition/team_update.html"
+    fields = ["photo"]
 
 
 class TeamDelete(LoginRequiredMixin, OnlyTeamMemberMixin, DeleteView):
     model = Team
     template_name = "competition/team_delete.html"
     success_url = reverse_lazy("home")
+
+
+class PointCreate(CreateView):
+    model = Point
+    fields = ["photo", "checkpoint"]
+
+
+    def form_valid(self, form):
+        """Assign currently signed user's team to point."""
+        form.instance.team = Membership.objects.get(user=self.request.user).team
+        response = super().form_valid(form)
+        return response
