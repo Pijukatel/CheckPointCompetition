@@ -83,6 +83,12 @@ def load_checkpoint2():
     call_command('loaddata', 'test_checkpoint_2.json')
 
 
+@pytest.mark.django_db
+@pytest.fixture
+def load_point1():
+    call_command('loaddata', 'test_point_1.json')
+
+
 @pytest.fixture
 def client_with_logged_user1():
     """Return client with logged in user1."""

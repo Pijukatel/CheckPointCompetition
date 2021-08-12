@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <p>Team: {{ object.team }}</p>
+    <p>Checkpoint: {{ object.checkpoint }}</p>
+    <p>Confirmed: {{ object.confirmed }}</p>
+    {% if not object.confirmed %}
+        {% if object.deny_reason %}
+            Photo deny reason: {{ object.deny_reason }}
+        {% else %}
+            Waiting for confirmation.
+        {% endif %}
+    {% endif %}
+
+    <span>Photo:</span>
+    <img src="{{ object.photo.url }}" width="400" height="400"></img>
+    <span>Team photo:</span>
+    <img src="{{ view.extra_context.team_photo.url }}" width="400" height="400"></img></p>
+    <span>Empty checkpoint photo:</span>
+    <img src="{{ view.extra_context.checkpoint_photo.url }}" width="400" height="400"></img></p>
+
+
+{% endblock content %}
+

@@ -13,22 +13,22 @@ class CheckPoint(models.Model):
     description = models.TextField()
     gps_lat = models.FloatField()
     gps_lon = models.FloatField()
-    photo = models.ImageField(upload_to='checkpoints')
+    photo = models.ImageField(upload_to="checkpoints")
 
 
 class Team(models.Model):
     name = models.CharField(max_length=20, primary_key=True)
-    photo = models.ImageField(upload_to='teams', null=True, blank=True)
+    photo = models.ImageField(upload_to="teams", null=True, blank=True)
     confirmed = models.BooleanField(default=False)
     confirmation_date = models.DateTimeField(auto_now=True)
     deny_reason = models.CharField(max_length=150, null=True, blank=True)
 
     def get_absolute_url(self):
-        return reverse('team', kwargs={'pk': self.name})
+        return reverse("team", kwargs={"pk": self.name})
 
 
 class Point(models.Model):
-    photo = models.ImageField(upload_to='points')
+    photo = models.ImageField(upload_to="points")
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     checkpoint = models.ForeignKey(
         CheckPoint, on_delete=models.CASCADE)
@@ -37,14 +37,15 @@ class Point(models.Model):
     confirmation_date = models.DateTimeField(auto_now=True)
 
     def get_absolute_url(self):
-        return reverse('point', kwargs={'pk': self.id})
+        return reverse("point", kwargs={"team": self.team_id,
+                                        "checkpoint": self.checkpoint_id})
 
     class Meta():
         """Unique point for each team and checkpoint."""
         constraints = [
             models.UniqueConstraint(
-                fields=['team', 'checkpoint'],
-                name='%(app_label)s_%(class)s_one_per_team_and_checkpoint'),
+                fields=["team", "checkpoint"],
+                name="%(app_label)s_%(class)s_one_per_team_and_checkpoint"),
         ]
 
 class Membership(models.Model):

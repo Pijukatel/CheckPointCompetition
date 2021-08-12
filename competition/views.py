@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -171,9 +171,28 @@ class PointCreate(CreateView):
     model = Point
     fields = ["photo", "checkpoint"]
 
-
     def form_valid(self, form):
         """Assign currently signed user's team to point."""
         form.instance.team = Membership.objects.get(user=self.request.user).team
         response = super().form_valid(form)
         return response
+
+class PointDetail(DetailView):
+    model = Point
+
+
+    def get_context_data(self, **kwargs):
+        """Adding team members info to extra context."""
+        if not self.extra_context:
+            self.extra_context = {}
+        team_photo = self.object.team.photo
+        checkpoint_photo = self.object.checkpoint.photo
+        self.extra_context.update({"team_photo": team_photo, "checkpoint_photo": checkpoint_photo,})
+
+        return super().get_context_data(**kwargs)
+
+    def get_object(self, queryset=None):
+        """Get object by it's name and owner."""
+        return get_object_or_404(self.model,
+                                 team__name=self.kwargs.get('team'),
+                                 checkpoint_id=self.kwargs.get('checkpoint'))

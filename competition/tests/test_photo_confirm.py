@@ -69,6 +69,8 @@ def test_confirm_template_for_non_staff_user(client_with_logged_user1):
 
 
 @pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.usefixtures("load_checkpoint1")
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
 @pytest.mark.django_db
 def test_confirm_message_for_non_staff_user(client_with_logged_user1):
     response = client_with_logged_user1.get("/team/photo-confirm/", follow=True)
