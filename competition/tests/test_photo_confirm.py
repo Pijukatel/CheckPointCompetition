@@ -160,3 +160,11 @@ def test_confirm_photo_do_not_show_explanation(client_with_logged_user_staff):
 def test_parameters_for_confirm_team_and_point():
     """Parametrize tests once both the team and point confirmation are implemented."""
     assert False
+
+
+def test_make_fail_when_update_two_teams_photo():
+    assert False
+
+
+def test_redirect_tospecific_confirmation_page_for_current_item():
+    assert False

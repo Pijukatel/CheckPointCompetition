@@ -30,12 +30,26 @@ class TeamPhotoConfirmationView(ConfirmationView):
     template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
     form_class = ConfirmPhoto
 
+    def get_success_url(self):
+        return reverse_lazy("team", kwargs={'pk': self.checked_object.name})
 
 class PointPhotoConfirmationView(ConfirmationView):
     model = Point
     template_name = "competition/point_photo_confirmation.html"
     template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
     form_class = ConfirmPhoto
+
+    def get_success_url(self):
+        return reverse_lazy("point", kwargs={"team": self.checked_object.team.name,
+                                             "checkpoint": self.checked_object.checkpoint.name})
+
+    def get_context_data(self, **kwargs):
+        """Adding photo to decide if it is confirmed or not."""
+        if not self.extra_context:
+            self.extra_context = {}
+        self.extra_context.update({"team_photo": self.checked_object.team.photo,
+                                   "checkpoint_photo": self.checked_object.checkpoint.photo})
+        return super().get_context_data(**kwargs)
 
 
 @login_required

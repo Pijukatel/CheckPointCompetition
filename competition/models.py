@@ -35,6 +35,7 @@ class Point(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     confirmed = models.BooleanField(default=False)
     confirmation_date = models.DateTimeField(auto_now=True)
+    deny_reason = models.CharField(max_length=150, null=True, blank=True)
 
     def get_absolute_url(self):
         return reverse("point", kwargs={"team": self.team_id,
