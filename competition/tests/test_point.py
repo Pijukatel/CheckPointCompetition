@@ -137,9 +137,28 @@ def test_auto_create_points_for_confirmed_team():
     assert len(checkpoints) == len(Point.objects.all())
 
 
-def test_list_point():
-    assert False
+@pytest.mark.usefixtures("load_point1")
+@pytest.mark.usefixtures("load_point2")
+@pytest.mark.usefixtures("load_checkpoint1")
+@pytest.mark.usefixtures("load_checkpoint2")
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+def test_point_list_template(client):
+    response = client.get(f"/points/{G.team1_name}/", follow=True)
+    assertTemplateUsed(response, "/".join([G.APP_NAME, "point_list.html"]))
 
 
-def test_templates_from_components():
-    assert False
+@pytest.mark.usefixtures("load_point1")
+@pytest.mark.usefixtures("load_point2")
+@pytest.mark.usefixtures("load_point3_of_team2")
+@pytest.mark.usefixtures("load_team2")
+@pytest.mark.usefixtures("load_checkpoint1")
+@pytest.mark.usefixtures("load_checkpoint2")
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+def test_point_list_only_single_teams_points(client):
+    response = client.get(f"/points/{G.team1_name}/", follow=True)
+    for point in Point.objects.filter(team=G.team1_name):
+        assert bytes(str(point), encoding=response.charset) in response.content
+    assert bytes(str(Point.objects.get(team=G.team2_name)),
+                 encoding=response.charset) not in response.content

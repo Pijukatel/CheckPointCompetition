@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+    Points of team {{ object_list.0.team }}:
+    {% for object in object_list %}
+        <p>{{ object }}</p>
+    {% endfor %}
+{% endblock content %}
+

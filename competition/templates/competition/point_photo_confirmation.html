@@ -1,13 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-    <p>{{ object }}</p>
-    <p>Team photo:</p>
-    <img src="{{ view.extra_context.team_photo.url }}" width="400" height="400"></img></p>
-    <p>Empty checkpoint photo:</p>
-    <img src="{{ view.extra_context.checkpoint_photo.url }}" width="400" height="400"></img></p>
-    <p>To be confirmed photo:</p>
-    <img src="{{ view.extra_context.photo.url }}" width="400" height="400"></img></p>
-
+    {% include "./components/point_photos.html" %}
 
     <form method="POST">
         {% csrf_token  %}

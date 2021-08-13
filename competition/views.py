@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from competition.forms import AddMembersForm, ConfirmPhoto
@@ -189,3 +189,12 @@ class PointDetail(GetPoint, DetailView):
         self.extra_context.update({"team_photo": team_photo, "checkpoint_photo": checkpoint_photo, })
 
         return super().get_context_data(**kwargs)
+
+
+class PointList(ListView):
+    model = Point
+
+    def get(self, request, *args, **kwargs):
+        """Adding team members info to extra context."""
+        self.queryset = Point.objects.filter(team=kwargs["team"])
+        return super().get(request, *args, **kwargs)
