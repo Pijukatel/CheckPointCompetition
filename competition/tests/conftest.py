@@ -118,3 +118,10 @@ def delete_test_team_image():
     """Cleanup fixture to remove test image after uploading it in test."""
     yield None
     os.remove(f'static/images/teams/{G.test_image_name}')
+
+
+@pytest.fixture()
+def delete_test_point_image():
+    """Cleanup fixture to remove test image after uploading it in test."""
+    yield None
+    os.remove(f'static/images/points/{G.test_image_name}')

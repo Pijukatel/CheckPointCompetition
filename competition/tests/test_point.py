@@ -27,18 +27,19 @@ def test_update_point_by_team_member_template(client_with_logged_user1):
     assertTemplateUsed(response, "/".join([G.APP_NAME, "point_form.html"]))
 
 
+@pytest.mark.usefixtures("delete_test_point_image")
 @pytest.mark.usefixtures("load_point1")
 @pytest.mark.usefixtures("load_checkpoint1")
 @pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
 @pytest.mark.django_db
 def test_update_point_post_by_team_member_template(client_with_logged_user1):
-    with open('competition/fixtures/test_image.jpg', 'rb') as fp:
+    with open("competition/fixtures/test_image.jpg", "rb") as fp:
         response = client_with_logged_user1.post(f"/point/{G.team1_name}/{G.checkpoint1_name}/update/",
                                                  {"Upload photo": "Photo.jpg",
                                                   "photo": fp},
                                                  follow=True)
-    assert False
-    # Does not update picture TODO: FIX
+    assertTemplateUsed(response, "/".join([G.APP_NAME, "point_detail.html"]))
+    assert Point.objects.all()[0].photo.name == f"points/{G.test_image_name}"
 
 
 @pytest.mark.usefixtures("load_registered_user2")
@@ -57,9 +58,11 @@ def test_update_point_by_non_team_member_template(client_with_logged_user2):
 @pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
 @pytest.mark.django_db
 def test_update_point_post_by_non_team_member_template(client_with_logged_user2):
-    response = client_with_logged_user2.post(f"/point/{G.team1_name}/{G.checkpoint1_name}/update/",
-                                             {"Upload photo": "Photo.jpg"},
-                                             follow=True)
+    with open("competition/fixtures/test_image.jpg", "rb") as fp:
+        response = client_with_logged_user2.post(f"/point/{G.team1_name}/{G.checkpoint1_name}/update/",
+                                                 {"Upload photo": "Photo.jpg",
+                                                  "photo": fp},
+                                                 follow=True)
     assertTemplateUsed(response, "/".join([G.APP_NAME, "login.html"]))
 
 
@@ -80,9 +83,11 @@ def test_update_point_by_non_team_member_message(client_with_logged_user2):
 @pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
 @pytest.mark.django_db
 def test_update_point_post_by_non_team_member_message(client_with_logged_user2):
-    response = client_with_logged_user2.post(f"/point/{G.team1_name}/{G.checkpoint1_name}/update/",
-                                             {"Upload photo": "Photo.jpg"},
-                                             follow=True)
+    with open("competition/fixtures/test_image.jpg", "rb") as fp:
+        response = client_with_logged_user2.post(f"/point/{G.team1_name}/{G.checkpoint1_name}/update/",
+                                                 {"Upload photo": "Photo.jpg",
+                                                  "photo": fp},
+                                                 follow=True)
     assert bytes("Only team members can do that. Log in as member of that team.",
                  encoding=response.charset) in response.content
 
@@ -104,10 +109,6 @@ def test_auto_create_points_for_confirmed_team():
     assert len(checkpoints) == len(Point.objects.all())
 
 
-def test_auto_delete_points_when_team_is_deleted():
-    assert False
-
-
 def test_list_point():
     assert False
 
@@ -118,3 +119,5 @@ def test_templates_from_components():
 
 def test_confirmed_point_cant_be_updated():
     assert False
+
+
