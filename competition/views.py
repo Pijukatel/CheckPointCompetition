@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden
+from django.http import HttpResponsePermanentRedirect
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
@@ -15,7 +15,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from competition.forms import AddMembersForm, ConfirmPhoto
 from competition.models import Membership, Team, Point
 from competition.utils import only_team_member
-from competition.views_custom_mixins import SelfForUser, OnlyTeamMemberMixin, NoEditForConfirmed, GetPoint
+from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
 from competition.views_generic import ConfirmationView
 
 
@@ -55,15 +55,12 @@ def leave_team(request):
     return HttpResponseRedirect(reverse("user"))
 
 
-# todo HANDLE BY DECORATOR AS OTHER SIMILAR AUTHORIZTION STUFF
+@only_team_member
 @login_required
 def add_team_member(request, pk):
     """Only existing members of team can add team members."""
-    if Membership.objects.filter(user=request.user, team__name=pk):
-        pass
-    else:
-        return HttpResponseForbidden()
-
+    if Team.objects.get(name=pk).confirmed:
+        return HttpResponsePermanentRedirect("../")
     form = AddMembersForm()
     if request.method == "POST":
         form = AddMembersForm(request.POST)
@@ -157,14 +154,17 @@ class TeamCreate(CreateView):
         return response
 
 
-# todo ONLY TEAM MEMEBER CAN UPDATE TEAM
-class TeamUpdate(LoginRequiredMixin, OnlyTeamMemberMixin, NoEditForConfirmed, UpdateView):
+@method_decorator(only_team_member, name="post")
+@method_decorator(only_team_member, name="get")
+class TeamUpdate(LoginRequiredMixin, NoEditForConfirmed, UpdateView):
     model = Team
     template_name = "competition/team_update.html"
     fields = ["photo"]
 
 
-class TeamDelete(LoginRequiredMixin, OnlyTeamMemberMixin, DeleteView):
+@method_decorator(only_team_member, name="post")
+@method_decorator(only_team_member, name="get")
+class TeamDelete(LoginRequiredMixin, DeleteView):
     model = Team
     template_name = "competition/team_delete.html"
     success_url = reverse_lazy("home")
@@ -172,7 +172,7 @@ class TeamDelete(LoginRequiredMixin, OnlyTeamMemberMixin, DeleteView):
 
 @method_decorator(only_team_member, name="post")
 @method_decorator(only_team_member, name="get")
-class PointUpdate(GetPoint, UpdateView):
+class PointUpdate(GetPoint, NoEditForConfirmed, UpdateView):
     model = Point
     fields = ["photo"]
 
