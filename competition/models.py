@@ -26,6 +26,11 @@ class Team(models.Model):
     def get_absolute_url(self):
         return reverse("team", kwargs={"pk": self.name})
 
+    @classmethod
+    def get_objects_to_confirm(cls, **kwargs):
+        """Get confirmation queue for this model."""
+        return cls.objects.filter(confirmed=False, team=kwargs["team"]).exclude(photo='')
+
 
 class Point(models.Model):
     photo = models.ImageField(upload_to="points")
@@ -40,6 +45,13 @@ class Point(models.Model):
     def get_absolute_url(self):
         return reverse("point", kwargs={"team": self.team_id,
                                         "checkpoint": self.checkpoint_id})
+
+    @classmethod
+    def get_objects_to_confirm(cls, **kwargs):
+        """Get confirmation queue for this model."""
+        return cls.objects.filter(confirmed=False,
+                                  team=kwargs["team"],
+                                  checkpoint=kwargs["checkpoint"]).exclude(photo='')
 
     class Meta:
         """Unique point for each team and checkpoint."""

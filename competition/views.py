@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponsePermanentRedirect, Http404
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
@@ -30,8 +30,7 @@ class TeamPhotoConfirmationView(ConfirmationView):
     template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
     form_class = ConfirmPhoto
 
-    def get_success_url(self):
-        return reverse_lazy("team", kwargs={'pk': self.checked_object.name})
+
 
 class PointPhotoConfirmationView(ConfirmationView):
     model = Point
@@ -39,16 +38,13 @@ class PointPhotoConfirmationView(ConfirmationView):
     template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
     form_class = ConfirmPhoto
 
-    def get_success_url(self):
-        return reverse_lazy("point", kwargs={"team": self.checked_object.team.name,
-                                             "checkpoint": self.checked_object.checkpoint.name})
 
     def get_context_data(self, **kwargs):
         """Adding photo to decide if it is confirmed or not."""
         if not self.extra_context:
             self.extra_context = {}
-        self.extra_context.update({"team_photo": self.checked_object.team.photo,
-                                   "checkpoint_photo": self.checked_object.checkpoint.photo})
+        self.extra_context.update({"team_photo": self.object.team.photo,
+                                   "checkpoint_photo": self.object.checkpoint.photo})
         return super().get_context_data(**kwargs)
 
 
