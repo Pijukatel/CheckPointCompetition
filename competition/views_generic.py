@@ -1,6 +1,6 @@
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import Http404
-from django.shortcuts import render
+from django.http import Http404, HttpResponse
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import UpdateView, RedirectView
@@ -35,15 +35,21 @@ class ConfirmationView(UpdateView):
 
 class RedirectToTopOfConfirmationQueue(RedirectView):
     model = None
+    template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
 
     def get_redirect_url(self, *args, **kwargs):
-        url = None
         objects_to_check = self.model.objects.filter(confirmed=False).exclude(photo='')
         if objects_to_check.exists():
             self.checked_object = objects_to_check.earliest('confirmation_date')
             self.checked_object.save()
+            return redirect(self.checked_object.get_absolute_url() + "photo-confirm/")
+        return None
 
-        return url
+    def get(self, request, *args, **kwargs):
+        url = self.get_redirect_url(*args, **kwargs)
+        if url:
+            return url
+        return render(request, self.template_name_when_nothing_to_check)
 
 
 '''

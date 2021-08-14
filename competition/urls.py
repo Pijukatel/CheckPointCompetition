@@ -6,6 +6,7 @@ from .models import CheckPoint, Team, Point
 from .views import (home, RegisterUser, login_page, UserDetail, UserUpdate, UserDelete, TeamDetail, TeamCreate,
                     leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
                     TeamPhotoConfirmationView, PointUpdate, PointDetail, PointList)
+from .views_generic import RedirectToTopOfConfirmationQueue
 
 urlpatterns = [
     path("", home, name="home"),
@@ -19,8 +20,10 @@ urlpatterns = [
          ListView.as_view(model=CheckPoint, template_name="competition/checkpoint_list.html"), name="checkpoints"),
     path("checkpoint/<str:pk>/",
          DetailView.as_view(model=CheckPoint, template_name="competition/checkpoint_detail.html"), name="checkpoint"),
-    path("point/photo-confirm/", PointPhotoConfirmationView.as_view(), name="point_photo_confirm"),
-    path("point/photo-confirm/<str:team>/<str:checkpoint>/", PointPhotoConfirmationView.as_view(), name="point_photo_confirm"),
+    path("point/photo-confirm/", RedirectToTopOfConfirmationQueue.as_view(model=Point),
+         name="point_photo_confirm_queue"),
+    path("point/<str:team>/<str:checkpoint>/photo-confirm/", PointPhotoConfirmationView.as_view(),
+         name="point_photo_confirm"),
     path("points/<str:team>/", PointList.as_view(), name="points"),
     path("point/<str:team>/<str:checkpoint>/update/", PointUpdate.as_view(), name="point_update"),
     path("point/<str:team>/<str:checkpoint>/", PointDetail.as_view(), name="point"),
@@ -28,7 +31,7 @@ urlpatterns = [
     path("point/<str:pk>/delete/", DeleteView.as_view(model=Point), name="point_delete"),
     path("team/create/", TeamCreate.as_view(), name="team_create"),
     path("team/leave/", leave_team, name="leave_team"),
-    path("team/photo-confirm/", TeamPhotoConfirmationView.as_view(), name="team_photo_confirm"),
+    path("team/photo-confirm/", RedirectToTopOfConfirmationQueue.as_view(model=Team), name="team_photo_confirm_queue"),
     path("team/<str:pk>/photo-confirm/", TeamPhotoConfirmationView.as_view(), name="team_photo_confirmTODO"),
     path("team/<str:pk>/", TeamDetail.as_view(), name="team"),
     path("team/<str:pk>/update/", TeamUpdate.as_view(), name="team_update"),

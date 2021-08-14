@@ -27,17 +27,13 @@ def home(request):
 class TeamPhotoConfirmationView(ConfirmationView):
     model = Team
     template_name = "competition/team_photo_confirmation.html"
-    template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
     form_class = ConfirmPhoto
-
 
 
 class PointPhotoConfirmationView(ConfirmationView):
     model = Point
     template_name = "competition/point_photo_confirmation.html"
-    template_name_when_nothing_to_check = "competition/team_photo_confirmation_empty.html"
     form_class = ConfirmPhoto
-
 
     def get_context_data(self, **kwargs):
         """Adding photo to decide if it is confirmed or not."""
