@@ -32,7 +32,7 @@ urlpatterns = [
     path("team/create/", TeamCreate.as_view(), name="team_create"),
     path("team/leave/", leave_team, name="leave_team"),
     path("team/photo-confirm/", RedirectToTopOfConfirmationQueue.as_view(model=Team), name="team_photo_confirm_queue"),
-    path("team/<str:pk>/photo-confirm/", TeamPhotoConfirmationView.as_view(), name="team_photo_confirmTODO"),
+    path("team/<str:pk>/photo-confirm/", TeamPhotoConfirmationView.as_view(), name="team_photo_confirm"),
     path("team/<str:pk>/", TeamDetail.as_view(), name="team"),
     path("team/<str:pk>/update/", TeamUpdate.as_view(), name="team_update"),
     path("team/<str:pk>/delete/", TeamDelete.as_view(), name="team_delete"),

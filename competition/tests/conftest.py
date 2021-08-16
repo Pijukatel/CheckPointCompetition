@@ -91,6 +91,18 @@ def load_point1():
 
 @pytest.mark.django_db
 @pytest.fixture
+def load_point1_no_photo():
+    call_command('loaddata', 'test_point_1_no_photo.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def load_point1_confirmed():
+    call_command('loaddata', 'test_point_1_confirmed.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
 def load_point2():
     call_command('loaddata', 'test_point_2.json')
 

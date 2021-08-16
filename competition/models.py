@@ -29,7 +29,7 @@ class Team(models.Model):
     @classmethod
     def get_objects_to_confirm(cls, **kwargs):
         """Get confirmation queue for this model."""
-        return cls.objects.filter(confirmed=False, team=kwargs["team"]).exclude(photo='')
+        return cls.objects.filter(confirmed=False, name=kwargs["pk"]).exclude(photo='')
 
 
 class Point(models.Model):

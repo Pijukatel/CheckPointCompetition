@@ -53,7 +53,7 @@ def test_update_confirmed_point_post_by_team_member_template(client_with_logged_
                                                   "photo": fp},
                                                  follow=True)
     assertTemplateUsed(response, "/".join([G.APP_NAME, "point_detail.html"]))
-    assert Point.objects.all()[0].photo.name == ""
+    assert Point.objects.all()[0].photo.name == G.test_point_photo_name
 
 
 @pytest.mark.usefixtures("load_point1")

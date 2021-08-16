@@ -1,6 +1,6 @@
 from django import forms
+
 from .models import Membership, Team
-from django import forms
 
 
 class ConfirmPhoto(forms.ModelForm):
