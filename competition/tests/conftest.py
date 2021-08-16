@@ -83,6 +83,36 @@ def load_checkpoint2():
     call_command('loaddata', 'test_checkpoint_2.json')
 
 
+@pytest.mark.django_db
+@pytest.fixture
+def load_point1():
+    call_command('loaddata', 'test_point_1.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def load_point1_no_photo():
+    call_command('loaddata', 'test_point_1_no_photo.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def load_point1_confirmed():
+    call_command('loaddata', 'test_point_1_confirmed.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def load_point2():
+    call_command('loaddata', 'test_point_2.json')
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def load_point3_of_team2():
+    call_command('loaddata', 'test_point_3_of_team2.json')
+
+
 @pytest.fixture
 def client_with_logged_user1():
     """Return client with logged in user1."""
@@ -112,3 +142,10 @@ def delete_test_team_image():
     """Cleanup fixture to remove test image after uploading it in test."""
     yield None
     os.remove(f'static/images/teams/{G.test_image_name}')
+
+
+@pytest.fixture()
+def delete_test_point_image():
+    """Cleanup fixture to remove test image after uploading it in test."""
+    yield None
+    os.remove(f'static/images/points/{G.test_image_name}')

@@ -13,26 +13,53 @@ class CheckPoint(models.Model):
     description = models.TextField()
     gps_lat = models.FloatField()
     gps_lon = models.FloatField()
-    photo = models.ImageField(upload_to='checkpoints')
-
-
-class Point(models.Model):
-    photo = models.ImageField(upload_to='points')
-    checkpoint = models.ForeignKey(
-        CheckPoint, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    confirmed = models.BooleanField(default=False)
+    photo = models.ImageField(upload_to="checkpoints")
 
 
 class Team(models.Model):
     name = models.CharField(max_length=20, primary_key=True)
-    photo = models.ImageField(upload_to='teams', null=True, blank=True)
+    photo = models.ImageField(upload_to="teams", null=True, blank=True)
     confirmed = models.BooleanField(default=False)
     confirmation_date = models.DateTimeField(auto_now=True)
     deny_reason = models.CharField(max_length=150, null=True, blank=True)
 
     def get_absolute_url(self):
-        return reverse('team', kwargs={'pk': self.name})
+        return reverse("team", kwargs={"pk": self.name})
+
+    @classmethod
+    def get_objects_to_confirm(cls, **kwargs):
+        """Get confirmation queue for this model."""
+        return cls.objects.filter(confirmed=False, name=kwargs["pk"]).exclude(photo='')
+
+
+class Point(models.Model):
+    photo = models.ImageField(upload_to="points")
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    checkpoint = models.ForeignKey(
+        CheckPoint, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    confirmed = models.BooleanField(default=False)
+    confirmation_date = models.DateTimeField(auto_now=True)
+    deny_reason = models.CharField(max_length=150, null=True, blank=True)
+
+    def get_absolute_url(self):
+        return reverse("point", kwargs={"team": self.team_id,
+                                        "checkpoint": self.checkpoint_id})
+
+    @classmethod
+    def get_objects_to_confirm(cls, **kwargs):
+        """Get confirmation queue for this model."""
+        return cls.objects.filter(confirmed=False,
+                                  team=kwargs["team"],
+                                  checkpoint=kwargs["checkpoint"]).exclude(photo='')
+
+    class Meta:
+        """Unique point for each team and checkpoint."""
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team", "checkpoint"],
+                name="%(app_label)s_%(class)s_one_per_team_and_checkpoint"),
+        ]
 
 
 class Membership(models.Model):
@@ -58,6 +85,21 @@ def save_user_profile(sender, instance, **kwargs):
 @receiver(post_save, sender=Membership)
 def after_membership_save(sender, instance, **kwargs):
     delete_empty_teams()
+
+
+@receiver(post_save, sender=Team)
+def after_team_save(sender, instance, **kwargs):
+    """Once team is confirmed prepare all it's points.
+
+    This should happen only once as team should be locked for editing after confirmation."""
+    if instance.confirmed:
+        create_team_points_for_each_checkpoint(instance)
+
+
+def create_team_points_for_each_checkpoint(team):
+    """This function creates empty points for each checkpoint."""
+    for checkpoint in CheckPoint.objects.all():
+        Point(team=team, checkpoint=checkpoint).save()
 
 
 def delete_empty_teams():

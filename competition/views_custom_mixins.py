@@ -1,6 +1,5 @@
 from django.http import HttpResponsePermanentRedirect
-
-from competition.models import Team, Membership
+from django.shortcuts import get_object_or_404
 
 
 class SelfForUser:
@@ -10,22 +9,24 @@ class SelfForUser:
         return self.request.user
 
 
-class OnlyTeamMemberMixin:
-    """Allow view only for user that is team member."""
-
-    def dispatch(self, request, *args, **kwargs):
-        team = Team.objects.get(name=kwargs['pk'])
-        membership = Membership.objects.filter(user=request.user, team=team).exists()
-        if membership:
-            return super().dispatch(request, *args, **kwargs)
-        return self.handle_no_permission()
-
-
 class NoEditForConfirmed:
-    """There is edit view for confirmed object."""
+    """There is no edit view for confirmed object."""
     url = '../'
 
     def get(self, request, *args, **kwargs):
-        if Team.objects.get(name=kwargs['pk']).confirmed:
+        if self.get_object().confirmed:
             return HttpResponsePermanentRedirect(self.url)
         return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if self.get_object().confirmed:
+            return HttpResponsePermanentRedirect(self.url)
+        return super().post(request, *args, **kwargs)
+
+
+class GetPoint:
+    def get_object(self, queryset=None):
+        """Get object by it's name and owner."""
+        return get_object_or_404(self.model,
+                                 team__name=self.kwargs.get('team'),
+                                 checkpoint_id=self.kwargs.get('checkpoint'))

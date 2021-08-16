@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <p>Team: {{ object.team }}</p>
+    <p>Checkpoint: {{ object.checkpoint }}</p>
+    <p>Confirmed: {{ object.confirmed }}</p>
+    {% if not object.confirmed %}
+        {% if object.deny_reason %}
+            Photo deny reason: {{ object.deny_reason }}
+        {% else %}
+            Waiting for confirmation.
+        {% endif %}
+    {% endif %}
+
+
+    {% include "./components/point_photos.html" %}
+
+
+{% endblock content %}
+

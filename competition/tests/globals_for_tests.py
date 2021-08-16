@@ -22,6 +22,7 @@ class Globals(NamedTuple):
     team1_name = "TestTeam1"
     team2_name = "TestTeam2"
     test_image_name = "test_image.jpg"
+    test_point_photo_name = "SomePhoto.jpg"
 
 
 G = Globals

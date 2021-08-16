@@ -1,0 +1,11 @@
+<p>{{ object }}</p>
+<p>Photo:</p>
+{% if object.photo %}
+    <img src="{{ object.photo.url }}" width="400" height="400"></img>
+{% else %}
+    No photo uploaded yet.
+{% endif %}
+<p>Team photo:</p>
+<img src="{{ view.extra_context.team_photo.url }}" width="400" height="400"></img></p>
+<p>Empty checkpoint photo:</p>
+<img src="{{ view.extra_context.checkpoint_photo.url }}" width="400" height="400"></img></p>

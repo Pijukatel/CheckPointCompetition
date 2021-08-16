@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+    {% include "./components/point_photos.html" %}
+
+    <form method="POST">
+        {% csrf_token  %}
+        {{ form.as_p }}
+        <input id="confirm_button" type="submit" name="Confirm photo" value="True">
+        <input id="deny_button" type="submit" name="Confirm photo" value="False">
+    </form>
+
+{% endblock content %}
+
