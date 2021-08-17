@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -105,6 +105,13 @@ def login_page(request):
 
     elif request.method == 'GET':
         return render(request, "competition/login.html", {"form": AuthenticationForm})
+
+
+def logout_link(request):
+    """Handle logout."""
+    logout(request)
+    return redirect('login')
+
 
 
 class UserDetail(LoginRequiredMixin, SelfForUser, DetailView):

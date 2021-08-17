@@ -3,7 +3,7 @@ from django.urls import path
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 
 from .models import CheckPoint, Team, Point
-from .views import (home, RegisterUser, login_page, UserDetail, UserUpdate, UserDelete, TeamDetail, TeamCreate,
+from .views import (home, RegisterUser, login_page, logout_link,  UserDetail, UserUpdate, UserDelete, TeamDetail, TeamCreate,
                     leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
                     TeamPhotoConfirmationView, PointUpdate, PointDetail, PointList)
 from .views_generic import RedirectToTopOfConfirmationQueue
@@ -12,6 +12,7 @@ urlpatterns = [
     path("", home, name="home"),
     path("accounts/register/", RegisterUser.as_view(), name="register"),
     path("accounts/login/", login_page, name="login"),
+    path('accounts/logout/', logout_link, name='logout'),
     path("accounts/user/", UserDetail.as_view(), name="user"),
     path("accounts/users/", ListView.as_view(model=User, template_name="competition/user_list.html"), name="users"),
     path("accounts/user/update/", UserUpdate.as_view(model=User), name="user_update"),
