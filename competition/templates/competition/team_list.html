@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-
-    {{ object_list }}
+    <ul>List of teams:
     {% for object in object_list %}
-        <p>{{ object }}</p>
+        <li><a href="{% url "team" object.name %}">{{ object }}</a></li>
     {% endfor %}
-
+    </ul>
 {% endblock content %}
+
 
