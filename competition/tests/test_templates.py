@@ -63,3 +63,21 @@ def test_base_template_side_bar_links(client):
     assertTemplateUsed(response, "base.html")
     assert bytes('href="/accounts/users/"', response.charset) in response.content
     assert bytes('href="/teams/"', response.charset) in response.content
+
+
+@pytest.mark.usefixtures('load_registered_user2_with_team2')
+@pytest.mark.usefixtures('load_registered_user1_with_team1')
+@pytest.mark.django_db
+def test_teams_template_contain_links_to_each_team(client):
+    response = client.get(reverse("teams"), follow=True)
+    assert bytes(f'href="/team/{G.team1_name}/"', response.charset) in response.content
+    assert bytes(f'href="/team/{G.team2_name}/"', response.charset) in response.content
+
+
+@pytest.mark.usefixtures('load_registered_user2_with_team2')
+@pytest.mark.usefixtures('load_registered_user1_with_team1')
+@pytest.mark.django_db
+def test_users_template_contain_name_of_each_user(client):
+    response = client.get(reverse("users"), follow=True)
+    assert bytes(f"{G.user1_name}", response.charset) in response.content
+    assert bytes(f"{G.user2_name}", response.charset) in response.content

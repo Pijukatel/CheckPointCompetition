@@ -3,8 +3,8 @@ from django.urls import path
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 
 from .models import CheckPoint, Team, Point
-from .views import (home, RegisterUser, login_page, logout_link,  UserDetail, UserUpdate, UserDelete, TeamDetail, TeamCreate,
-                    leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
+from .views import (home, RegisterUser, login_page, logout_link,  UserDetail, UserUpdate, UserDelete, TeamDetail,
+                    TeamCreate, leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
                     TeamPhotoConfirmationView, PointUpdate, PointDetail, PointList)
 from .views_generic import RedirectToTopOfConfirmationQueue
 

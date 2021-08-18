@@ -113,7 +113,6 @@ def logout_link(request):
     return redirect('login')
 
 
-
 class UserDetail(LoginRequiredMixin, SelfForUser, DetailView):
     template_name = "competition/user_detail.html"
 

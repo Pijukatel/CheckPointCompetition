@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-
-    {{ object_list }}
+    <ul>List of users:
     {% for object in object_list %}
-        <p>{{ object }}</p>
+        <li>{{ object }}</li>
     {% endfor %}
-
+    </ul>
 {% endblock content %}
 
