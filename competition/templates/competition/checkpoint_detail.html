@@ -7,25 +7,7 @@
     <p>Lateral: {{ object.gps_lat }}</p>
     <img src="{{ object.photo.url }}" width="400" height="400"></img>
 
-    {% include "competition/map.html" %}
-    sad
-    <p></p>
-    as
-    <p></p>
-    sd
-    <p></p>
-    asd
-    <p></p>
-    ad
-    <p></p>
-    ad
-    <p></p>
-    asd
-    <p></p>
-    as
-    <p></p>
-    das
-    <p></p>
-    da
+    {% include "competition/map.html" with lon=object.gps_lon lat=object.gps_lat%}
+
 {% endblock content %}
 

@@ -1,26 +1,19 @@
+<iframe height="400px" width="400px" srcdoc='
+<!DOCTYPE HTML>
 <head>
-    <style>
-        #mapdiv   {
-        max-width: 400px;
-        max-height: 400px;
-        overflow:auto;}
-    </style>
-</head>
-
-    some stuff
-  <div id="mapdiv">
-      map
-  </div>
+  <title>OpenLayers Simplest Example</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/2.11/lib/OpenLayers.js"></script>
+</head>
+<body>
+  <div id="map" style="height:400px"></div>
   <script>
-    map = new OpenLayers.Map("mapdiv");
+    map = new OpenLayers.Map("map");
     map.addLayer(new OpenLayers.Layer.OSM());
 
     epsg4326 =  new OpenLayers.Projection("EPSG:4326"); //WGS 1984 projection
     projectTo = map.getProjectionObject(); //The map projection (Spherical Mercator)
 
     var lonLat = new OpenLayers.LonLat( 11.974560 , 57.708870 ).transform(epsg4326, projectTo);
-
 
     var zoom=12;
     map.setCenter (lonLat, zoom);
@@ -32,14 +25,13 @@
 
     // Define markers as "features" of the vector layer:
     var feature = new OpenLayers.Feature.Vector(
-            new OpenLayers.Geometry.Point( 11.974560, 57.708870 ).transform(epsg4326, projectTo),
-            {description:'This is the value of<br>the description attribute'} ,
-            {externalGraphic: 'img/marker.png', graphicHeight: 25, graphicWidth: 21, graphicXOffset:-12, graphicYOffset:-25  }
+            new OpenLayers.Geometry.Point( {{ lon }}, {{ lat }} ).transform(epsg4326, projectTo),
+            {description:"This is the value of<br>{{ lon }}"} ,
+            {externalGraphic: "/images/marker.PNG", graphicHeight: 25, graphicWidth: 21, graphicXOffset:-12, graphicYOffset:-25  }
         );
     vectorLayer.addFeatures(feature);
 
     map.addLayer(vectorLayer);
-
 
     //Add a selector control to the vectorLayer with popup functions
     var controls = {
@@ -50,10 +42,10 @@
       feature.popup = new OpenLayers.Popup.FramedCloud("pop",
           feature.geometry.getBounds().getCenterLonLat(),
           null,
-          '<div class="markerContent">'+feature.attributes.description+'</div>',
+          "<div >"+feature.attributes.description+"</div>",
           null,
           true,
-          function() { controls['selector'].unselectAll(); }
+          function() { controls["selector"].unselectAll(); }
       );
       //feature.popup.closeOnMove = true;
       map.addPopup(feature.popup);
@@ -64,7 +56,9 @@
       feature.popup = null;
     }
 
-    map.addControl(controls['selector']);
-    controls['selector'].activate();
-
+    map.addControl(controls["selector"]);
+    controls["selector"].activate();
   </script>
+  
+</body>
+'></iframe>

@@ -10,7 +10,7 @@ from .views_generic import RedirectToTopOfConfirmationQueue
 
 urlpatterns = [
     path("", home, name="home"),
-    path("map/", TemplateView.as_view(template_name="competition/map.html") , name="map"),
+    path("map/", TemplateView.as_view(template_name="competition/map2.html") , name="map"),
     path("accounts/register/", RegisterUser.as_view(), name="register"),
     path("accounts/login/", login_page, name="login"),
     path('accounts/logout/', logout_link, name='logout'),
