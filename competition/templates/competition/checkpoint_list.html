@@ -6,5 +6,7 @@
         <p>Name: <a href="{% url 'checkpoint' object.name %}">{{ object.name }}</a></p>
     {% endfor %}
 
+    {% include "competition/components/map.html" with objects=object_list %}
+
 {% endblock content %}
 

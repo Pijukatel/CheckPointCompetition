@@ -24,12 +24,14 @@
     var vectorLayer = new OpenLayers.Layer.Vector("Overlay");
 
     // Define markers as "features" of the vector layer:
+    {% for object in objects %}
     var feature = new OpenLayers.Feature.Vector(
-            new OpenLayers.Geometry.Point( {{ lon }}, {{ lat }} ).transform(epsg4326, projectTo),
-            {description:"This is the value of<br>{{ lon }}"} ,
+            new OpenLayers.Geometry.Point( {{ object.gps_lon }}, {{ object.gps_lat }} ).transform(epsg4326, projectTo),
+            {description:"This is the value of<br>{{ object.gps_lon }}, {{ object.gps_lat }}"} ,
             {externalGraphic: "/images/marker.PNG", graphicHeight: 25, graphicWidth: 21, graphicXOffset:-12, graphicYOffset:-25  }
         );
     vectorLayer.addFeatures(feature);
+    {% endfor %}
 
     map.addLayer(vectorLayer);
 

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load competition_template_utils %}
 {% block content %}
 
     <p>Name: {{ object.name }}</p>
@@ -7,7 +8,8 @@
     <p>Lateral: {{ object.gps_lat }}</p>
     <img src="{{ object.photo.url }}" width="400" height="400"></img>
 
-    {% include "competition/map.html" with lon=object.gps_lon lat=object.gps_lat%}
+    {% to_list object as objects%}
+    {% include "competition/components/map.html" with objects=objects %}
 
 {% endblock content %}
 
