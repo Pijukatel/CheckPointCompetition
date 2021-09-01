@@ -28,6 +28,27 @@ def test_checkpoints_list_view_contains_correct_names(client):
 
 
 @pytest.mark.usefixtures("load_checkpoint1")
+@pytest.mark.usefixtures("load_checkpoint2")
+@pytest.mark.django_db
+def test_checkpoints_list_view_contains_map(client):
+    response = client.get("/checkpoints/", follow=True)
+    assert bytes(
+        f"""<iframe height="400px" width="400px" srcdoc=\'\n<!DOCTYPE HTML>\n<head>\n  <title>Point map</title>""",
+        encoding=response.charset) in response.content
+
+
+@pytest.mark.usefixtures("load_checkpoint1")
+@pytest.mark.usefixtures("load_checkpoint2")
+@pytest.mark.django_db
+def test_checkpoints_list_view_map_contains_all_checkpoints(client):
+    response = client.get("/checkpoints/", follow=True)
+    assert bytes(f"OpenLayers.Geometry.Point( {G.checkpoint1_lon}, {G.checkpoint1_lat} )",
+                 encoding=response.charset) in response.content
+    assert bytes(f"OpenLayers.Geometry.Point( {G.checkpoint2_lon}, {G.checkpoint2_lat} )",
+                 encoding=response.charset) in response.content
+
+
+@pytest.mark.usefixtures("load_checkpoint1")
 @pytest.mark.django_db
 def test_checkpoint_detail_view_contains_correct_data(client):
     response = client.get("/checkpoint/TestCheckPoint1/", follow=True)
