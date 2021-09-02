@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
-    Points of team {{ object_list.0.team }}:
+    <ol>Points of team  <a href="{% url 'team' object_list.0.team.name%}"> {{ object_list.0.team.name }}</a>:
     {% for object in object_list %}
-        <p>{{ object }}</p>
+        <li>
+            Point details
+            Checkpoint: <a href="{% url 'checkpoint' object.checkpoint_id %}">{{ object.checkpoint_id }}</a>
+            Confirmed: {{ object.confirmed }}
+        </li>
     {% endfor %}
+    </ol>
 {% endblock content %}
 

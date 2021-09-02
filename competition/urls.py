@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.urls import path
-from django.views.generic import ListView, DetailView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView, TemplateView
 
 from .models import CheckPoint, Team, Point
 from .views import (home, RegisterUser, login_page, logout_link,  UserDetail, UserUpdate, UserDelete, TeamDetail,
@@ -10,6 +10,7 @@ from .views_generic import RedirectToTopOfConfirmationQueue
 
 urlpatterns = [
     path("", home, name="home"),
+    path("map/", TemplateView.as_view(template_name="competition/map2.html") , name="map"),
     path("accounts/register/", RegisterUser.as_view(), name="register"),
     path("accounts/login/", login_page, name="login"),
     path('accounts/logout/', logout_link, name='logout'),
