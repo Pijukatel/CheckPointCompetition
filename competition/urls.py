@@ -3,14 +3,13 @@ from django.urls import path
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, TemplateView
 
 from .models import CheckPoint, Team, Point
-from .views import (home, RegisterUser, login_page, logout_link,  UserDetail, UserUpdate, UserDelete, TeamDetail,
+from .views import (home, RegisterUser, login_page, logout_link, UserDetail, UserUpdate, UserDelete, TeamDetail,
                     TeamCreate, leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
-                    TeamPhotoConfirmationView, PointUpdate, PointDetail, PointList)
+                    TeamPhotoConfirmationView, PointUpdate, PointDetail, PointList, CheckPointDetail)
 from .views_generic import RedirectToTopOfConfirmationQueue
 
 urlpatterns = [
     path("", home, name="home"),
-    path("map/", TemplateView.as_view(template_name="competition/map2.html") , name="map"),
     path("accounts/register/", RegisterUser.as_view(), name="register"),
     path("accounts/login/", login_page, name="login"),
     path('accounts/logout/', logout_link, name='logout'),
@@ -20,8 +19,7 @@ urlpatterns = [
     path("accounts/user/delete/", UserDelete.as_view(), name="user_delete"),
     path("checkpoints/",
          ListView.as_view(model=CheckPoint, template_name="competition/checkpoint_list.html"), name="checkpoints"),
-    path("checkpoint/<str:pk>/",
-         DetailView.as_view(model=CheckPoint, template_name="competition/checkpoint_detail.html"), name="checkpoint"),
+    path("checkpoint/<str:pk>/", CheckPointDetail.as_view(), name="checkpoint"),
     path("point/photo-confirm/", RedirectToTopOfConfirmationQueue.as_view(model=Point),
          name="point_photo_confirm_queue"),
     path("point/<str:team>/<str:checkpoint>/photo-confirm/", PointPhotoConfirmationView.as_view(),

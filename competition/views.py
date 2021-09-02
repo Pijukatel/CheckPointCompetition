@@ -13,10 +13,11 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from competition.forms import AddMembersForm, ConfirmPhoto
-from competition.models import Membership, Team, Point
+from competition.models import Membership, Team, Point, CheckPoint
 from competition.utils import only_team_member
 from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
 from competition.views_generic import ConfirmationView
+from competition.templatetags.competition_template_utils import team_of_user
 
 
 def home(request):
@@ -188,6 +189,21 @@ class PointUpdate(GetPoint, NoEditForConfirmed, UpdateView):
     model = Point
     fields = ["photo"]
 
+
+class CheckPointDetail(DetailView):
+    model = CheckPoint
+    template_name = "competition/checkpoint_detail.html"
+
+    def get_context_data(self, **kwargs):
+        """Adding team members info to extra context."""
+        if not self.extra_context:
+            self.extra_context = {}
+        if self.request.user.is_authenticated:
+            team = team_of_user(self.request.user)
+            if team:
+                point = Point.objects.get(team__name=team, checkpoint_id=kwargs['object'].pk)
+                self.extra_context.update({"point_photo": point.photo, "point_confirmed": point.confirmed})
+        return super().get_context_data(**kwargs)
 
 class PointDetail(GetPoint, DetailView):
     model = Point

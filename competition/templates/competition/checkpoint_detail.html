@@ -1,15 +1,31 @@
 {% extends "base.html" %}
 {% load competition_template_utils %}
 {% block content %}
+    <ul>Checkpoint details:
+        <li>Name: {{ object.name }}</li>
+        <li>Description: {{ object.description }}</li>
+        <li>Longitudinal: {{ object.gps_lon }}</li>
+        <li>Lateral: {{ object.gps_lat }}</li>
+    </ul>
 
-    <p>Name: {{ object.name }}</p>
-    <p>Description: {{ object.description }}</p>
-    <p>Longitudinal: {{ object.gps_lon }}</p>
-    <p>Lateral: {{ object.gps_lat }}</p>
+
     <img src="{{ object.photo.url }}" width="400" height="400"></img>
-
     {% to_list object as objects%}
     {% include "competition/components/map.html" with objects=objects %}
+
+    {%  if user.is_authenticated %}
+        <ul>Team's point:
+            {% team_of_user user as team %}
+            {% if team %}
+                <li>Confirmed: {{ point_confirmed }}</li>
+                {% if point_confirmed == True %}
+                <li>Photo: <img src="{{ point_photo.url }}" width="400" height="400"></img></li>
+                {% else %}
+                <li>Photo: Not uploaded yet. !TODO UPLOAD!</li>
+                {% endif %}
+            {% endif %}
+        </ul>
+    {% endif %}
 
 {% endblock content %}
 
