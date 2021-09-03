@@ -5,7 +5,7 @@ from django.views.generic import ListView, DetailView, UpdateView, DeleteView, T
 from .models import CheckPoint, Team, Point
 from .views import (home, RegisterUser, login_page, logout_link, UserDetail, UserUpdate, UserDelete, TeamDetail,
                     TeamCreate, leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
-                    TeamPhotoConfirmationView, PointUpdate, PointDetail, PointList, CheckPointDetail)
+                    TeamPhotoConfirmationView, PointUpdate, PointDetail, PointList, CheckPointDetail, checkpoint_view)
 from .views_generic import RedirectToTopOfConfirmationQueue
 
 urlpatterns = [
@@ -19,7 +19,9 @@ urlpatterns = [
     path("accounts/user/delete/", UserDelete.as_view(), name="user_delete"),
     path("checkpoints/",
          ListView.as_view(model=CheckPoint, template_name="competition/checkpoint_list.html"), name="checkpoints"),
-    path("checkpoint/<str:pk>/", CheckPointDetail.as_view(), name="checkpoint"),
+    path("checkpoint/<str:pk>/", checkpoint_view, name="checkpoint"),
+    #path("checkpoint/<str:pk>/", CheckPointDetail.as_view(), name="checkpoint"),
+
     path("point/photo-confirm/", RedirectToTopOfConfirmationQueue.as_view(model=Point),
          name="point_photo_confirm_queue"),
     path("point/<str:team>/<str:checkpoint>/photo-confirm/", PointPhotoConfirmationView.as_view(),

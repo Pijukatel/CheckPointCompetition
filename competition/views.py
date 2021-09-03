@@ -12,7 +12,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from competition.forms import AddMembersForm, ConfirmPhoto
+from competition.forms import AddMembersForm, ConfirmPhoto, PointPhotoForm
 from competition.models import Membership, Team, Point, CheckPoint
 from competition.utils import only_team_member
 from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
@@ -190,6 +190,25 @@ class PointUpdate(GetPoint, NoEditForConfirmed, UpdateView):
     fields = ["photo"]
 
 
+def checkpoint_view(request, *args, **kwargs):
+    """Non standard view that shows checkpoint details and for users that are mebers of team it also shows
+    point details with option to edit Point photo if not confirmed yet."""
+    checkpoint = CheckPoint.objects.get(name=kwargs['pk'])
+    if request.user.is_authenticated:
+        team = team_of_user(request.user)
+        if team:
+            point = Point.objects.get(team__name=team, checkpoint_id=kwargs['pk'])
+            if request.POST:
+                form = PointPhotoForm(request.POST, request.FILES, instance=point)
+            else:
+                form = PointPhotoForm(None)
+            if form.is_valid():
+                form.save()
+
+    context = {"checkpoint": checkpoint, "point_photo": point.photo, "point_confirmed": point.confirmed, "form": form}
+    return render(request, "competition/checkpoint_detail.html", context)
+
+
 class CheckPointDetail(DetailView):
     model = CheckPoint
     template_name = "competition/checkpoint_detail.html"
@@ -204,6 +223,7 @@ class CheckPointDetail(DetailView):
                 point = Point.objects.get(team__name=team, checkpoint_id=kwargs['object'].pk)
                 self.extra_context.update({"point_photo": point.photo, "point_confirmed": point.confirmed})
         return super().get_context_data(**kwargs)
+
 
 class PointDetail(GetPoint, DetailView):
     model = Point
