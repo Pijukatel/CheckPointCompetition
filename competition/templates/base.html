@@ -31,12 +31,6 @@
                     <li><a href="{% url 'teams' %}">Teams</a></li>
                     <li><a href="{% url 'users' %}">Users</a></li>
                     <li><a href="{% url 'checkpoints' %}">Checkpoints</a></li>
-                    {%  if user.is_authenticated %}
-                        {% team_of_user user as team %}
-                        <li><a href="{% url 'points' team%}">Collected points</a></li>
-                        {% if team %}
-                        {% endif %}
-                    {% endif %}
                 </ul>
         </li>
     </ul>
@@ -57,6 +51,7 @@
 
 
                     {%  if user.is_authenticated %}
+                        {% team_of_user user as team %}
                         User: <a class="mui--text-light" href="{% url 'user' %}"> {{ request.user }} |</a>
                         <a class="mui--text-light" href="{% url 'logout' %}">Logout |</a>
                         {% if team %}

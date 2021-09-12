@@ -191,9 +191,10 @@ class PointUpdate(GetPoint, NoEditForConfirmed, UpdateView):
 
 
 def checkpoint_view(request, *args, **kwargs):
-    """Non standard view that shows checkpoint details and for users that are mebers of team it also shows
+    """Non standard view that shows checkpoint details and for users that are members of team it also shows
     point details with option to edit Point photo if not confirmed yet."""
     checkpoint = CheckPoint.objects.get(name=kwargs['pk'])
+    context = {}
     if request.user.is_authenticated:
         team = team_of_user(request.user)
         if team:
@@ -204,9 +205,28 @@ def checkpoint_view(request, *args, **kwargs):
                 form = PointPhotoForm(None)
             if form.is_valid():
                 form.save()
+            context.update({"point_photo": point.photo, "point_confirmed": point.confirmed, "form": form, "team": team})
 
-    context = {"checkpoint": checkpoint, "point_photo": point.photo, "point_confirmed": point.confirmed, "form": form}
+    context.update({"checkpoint": checkpoint})
     return render(request, "competition/checkpoint_detail.html", context)
+
+
+class CheckpointList(ListView):
+    model = CheckPoint
+    template_name = "competition/checkpoint_list.html"
+
+    def get_context_data(self, **kwargs):
+        """Adding team members info to extra context."""
+        if not self.extra_context:
+            self.extra_context = {}
+        if self.request.user.is_authenticated:
+            self.template_name = "competition/checkpoint_list_confirmed_team.html"
+            team_object = Team.objects.get(name=team_of_user(self.request.user))
+            if team_object.confirmed:
+                points = Point.objects.filter(team=team_object).order_by('checkpoint_id')
+                self.extra_context.update({"team_object": team_object, "checkpoints": self.object_list})
+                self.object_list = zip(self.object_list, points)
+        return super().get_context_data(**kwargs)
 
 
 class CheckPointDetail(DetailView):

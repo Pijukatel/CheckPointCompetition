@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <ol> List of checkpoints
+        {% if team_object %}
+            {% if team_object.confirmed %}
+                (and points of team <a href="{% url 'team' team_object.name%}"> {{ team_object.name }}</a>)
+            {% endif %}
+        {% endif %}
+        :
+    {% for checkpoint, point in object_list %}
+        <li>
+            <a href="{% url 'checkpoint' checkpoint.name %}">{{ checkpoint.name }}</a>
+            {% if team_object %}
+                {% if team_object.confirmed %}
+                    {% if point.confirmed and point.photo%}
+                        Confirmed.
+                    {% elif point.photo %}
+                        Waiting for confirmation.
+                    {% else %}
+                        Not visited yet.
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </li>
+
+    {% endfor %}
+    </ol>
+    <p>Map with all checkpoints:</p>
+    {% include "competition/components/map.html" with objects=checkpoints %}
+
+{% endblock content %}
+
