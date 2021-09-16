@@ -7,33 +7,11 @@
         <li>Longitudinal: {{ checkpoint.gps_lon }}</li>
         <li>Lateral: {{ checkpoint.gps_lat }}</li>
     </ul>
-
-
     <img src="{{ checkpoint.photo.url }}" width="400" height="400"></img>
     {% to_list checkpoint as checkpoints%}
     {% include "competition/components/map.html" with objects=checkpoints %}
-
-    {%  if user.is_authenticated %}
-        <ul>Team's point:
-            {% team_of_user user as team %}
-            {% if team %}
-                <li>Confirmed: {{ point_confirmed }}</li>
-                {% if point_photo.name %}
-                    <li>Photo: <img src="{{ point_photo.url }}" width="400" height="400"></img></li>
-                {% else %}
-                    <li>Photo: Not uploaded yet</li>
-                {% endif %}
-                {% if point_confirmed == False %}
-                    Not confirmed. Can be changed.
-                    <form method="POST" action="" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ form }}
-                        <input type="submit" value="Save photo">
-                    </form>
-                {% endif %}
-            {% endif %}
-        </ul>
-    {% endif %}
+    {% block point %}
+    {% endblock point %}
 
 {% endblock content %}
 
