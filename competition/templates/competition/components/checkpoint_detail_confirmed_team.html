@@ -12,12 +12,12 @@
                     <li>Photo: Not uploaded yet</li>
                 {% endif %}
                 {% if point_confirmed == False %}
-                    Not confirmed. Can be changed.
-                    <form method="POST" action="" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ form }}
-                        <input type="submit" value="Save photo">
-                    </form>
+                    {% if deny_reason %}
+                        Photo deny reason: {{ deny_reason }}
+                    {% else %}
+                        Waiting for confirmation. Can be changed.
+                    {% endif %}
+                    {% include "competition/components/point_form.html" %}
                 {% endif %}
             {% endif %}
         </ul>

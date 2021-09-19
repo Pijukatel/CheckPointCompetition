@@ -14,7 +14,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from competition.forms import AddMembersForm, ConfirmPhoto, PointPhotoForm
 from competition.models import Membership, Team, Point, CheckPoint
-from competition.utils import only_team_member
+from competition.utils import only_team_member, get_existing_team_if_confirmed
 from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
 from competition.views_generic import ConfirmationView
 from competition.templatetags.competition_template_utils import team_of_user
@@ -183,23 +183,6 @@ class TeamDelete(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("home")
 
 
-@method_decorator(only_team_member, name="post")
-@method_decorator(only_team_member, name="get")
-class PointUpdate(GetPoint, NoEditForConfirmed, UpdateView):
-    model = Point
-    fields = ["photo"]
-
-
-def get_existing_team_if_confirmed(user):
-    """If user is member of confirmed team, return team object. Otherwise None."""
-    team_object = Team.objects.filter(name=team_of_user(user))
-    if team_object.exists():
-        team_object = team_object.first()
-        if team_object.confirmed:
-            return team_object
-    return None
-
-
 def checkpoint_view(request, *args, **kwargs):
     """Non standard view that shows checkpoint details and for users that are members of team it also shows
     point details with option to edit Point photo if not confirmed yet."""
@@ -207,16 +190,16 @@ def checkpoint_view(request, *args, **kwargs):
     context = {}
     context.update({"checkpoint": checkpoint})
     if request.user.is_authenticated:
-        team = team_of_user(request.user)
         if team_object := get_existing_team_if_confirmed(user=request.user):
             point = Point.objects.get(team=team_object, checkpoint_id=kwargs['pk'])
             if request.POST:
                 form = PointPhotoForm(request.POST, request.FILES, instance=point)
             else:
                 form = PointPhotoForm(None)
-            if form.is_valid():
+            if form.is_valid() and not point.confirmed:
                 form.save()
-            context.update({"point_photo": point.photo, "point_confirmed": point.confirmed, "form": form, "team": team_object.name})
+            context.update({"point_photo": point.photo, "deny_reason": point.deny_reason,
+                            "point_confirmed": point.confirmed, "form": form, "team": team_object.name})
             return render(request, "competition/components/checkpoint_detail_confirmed_team.html", context)
     return render(request, "competition/checkpoint_detail.html", context)
 
@@ -238,22 +221,6 @@ class CheckpointList(ListView):
         return super().get_context_data(**kwargs)
 
 
-class CheckPointDetail(DetailView):
-    model = CheckPoint
-    template_name = "competition/checkpoint_detail.html"
-
-    def get_context_data(self, **kwargs):
-        """Adding team members info to extra context."""
-        if not self.extra_context:
-            self.extra_context = {}
-        if self.request.user.is_authenticated:
-            if team_object := get_existing_team_if_confirmed(user=self.request.user):
-                self.template_name = "competition/checkpoint_detail_confirmed_team.html"
-                point = Point.objects.get(team=team_object, checkpoint_id=kwargs['object'].pk)
-                self.extra_context.update({"point_photo": point.photo, "point_confirmed": point.confirmed})
-        return super().get_context_data(**kwargs)
-
-
 class PointDetail(GetPoint, DetailView):
     model = Point
 
@@ -266,12 +233,3 @@ class PointDetail(GetPoint, DetailView):
         self.extra_context.update({"team_photo": team_photo, "checkpoint_photo": checkpoint_photo, })
 
         return super().get_context_data(**kwargs)
-
-
-class PointList(ListView):
-    model = Point
-
-    def get(self, request, *args, **kwargs):
-        """Adding team members info to extra context."""
-        self.queryset = Point.objects.filter(team=kwargs["team"])
-        return super().get(request, *args, **kwargs)

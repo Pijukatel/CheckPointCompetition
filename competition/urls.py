@@ -1,17 +1,14 @@
 from django.contrib.auth.models import User
 from django.urls import path
-from django.views.generic import ListView, DetailView, UpdateView, DeleteView, TemplateView
+from django.views.generic import ListView
 
 from .models import CheckPoint, Team, Point
 from .views import (home, RegisterUser, login_page, logout_link, UserDetail, UserUpdate, UserDelete, TeamDetail,
                     TeamCreate, leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
-                    TeamPhotoConfirmationView, PointUpdate, PointDetail, PointList, CheckPointDetail, checkpoint_view,
+                    TeamPhotoConfirmationView, PointDetail, checkpoint_view,
                     CheckpointList)
 from .views_generic import RedirectToTopOfConfirmationQueue
 
-# TODO:
-# Add tests.
-# Remove points standalone views and their tests
 
 urlpatterns = [
     path("", home, name="home"),
@@ -24,16 +21,11 @@ urlpatterns = [
     path("accounts/user/delete/", UserDelete.as_view(), name="user_delete"),
     path("checkpoints/", CheckpointList.as_view(), name="checkpoints"),
     path("checkpoint/<str:pk>/", checkpoint_view, name="checkpoint"),
-    #path("checkpoint/<str:pk>/", CheckPointDetail.as_view(), name="checkpoint"),
-
     path("point/photo-confirm/", RedirectToTopOfConfirmationQueue.as_view(model=Point),
          name="point_photo_confirm_queue"),
     path("point/<str:team>/<str:checkpoint>/photo-confirm/", PointPhotoConfirmationView.as_view(),
          name="point_photo_confirm"),
-    path("point/<str:team>/<str:checkpoint>/update/", PointUpdate.as_view(), name="point_update"),
     path("point/<str:team>/<str:checkpoint>/", PointDetail.as_view(), name="point"),
-    path("point/<str:pk>/update/", UpdateView.as_view(model=Point), name="point_update"),
-    path("point/<str:pk>/delete/", DeleteView.as_view(model=Point), name="point_delete"),
     path("team/create/", TeamCreate.as_view(), name="team_create"),
     path("team/leave/", leave_team, name="leave_team"),
     path("team/photo-confirm/", RedirectToTopOfConfirmationQueue.as_view(model=Team), name="team_photo_confirm_queue"),

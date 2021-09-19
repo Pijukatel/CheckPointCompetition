@@ -21,6 +21,7 @@ def test_checkpoint_list_templates_by_url_with_anonymous(client):
     assertTemplateUsed(response, "/".join([G.APP_NAME, "checkpoint_list.html"]))
     assertTemplateNotUsed(response, "/".join([G.APP_NAME, "checkpoint_list_confirmed_team.html"]))
 
+
 @pytest.mark.usefixtures("load_point1")
 @pytest.mark.usefixtures("load_point2")
 @pytest.mark.usefixtures("load_checkpoint1")
@@ -72,10 +73,6 @@ def test_checkpoint_list_templates_by_url_with_logged_user_with_non_confirmed_te
     assertTemplateUsed(response, "/".join([G.APP_NAME, "checkpoint_detail.html"]))
 
 
-def test_get_existing_team_if_confirmed():
-    assert False
-
-
 @pytest.mark.usefixtures("load_checkpoint1")
 @pytest.mark.usefixtures("load_checkpoint2")
 @pytest.mark.django_db
@@ -115,5 +112,3 @@ def test_checkpoint_detail_view_contains_correct_data(client):
     assert bytes(f"Longitudinal: {G.checkpoint1_lon}", encoding=response.charset) in response.content
     assert bytes(f"Lateral: {G.checkpoint1_lat}", encoding=response.charset) in response.content
     # TODO: TEST IMAGE SOMEHOW...
-
-

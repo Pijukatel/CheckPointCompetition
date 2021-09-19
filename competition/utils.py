@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from competition.models import Team, Membership
+from competition.templatetags.competition_template_utils import team_of_user
 
 
 def user_is_not_staff(request):
@@ -50,3 +51,13 @@ def only_team_member(func):
         return HttpResponseRedirect(reverse("login"))
 
     return _only_team_member
+
+
+def get_existing_team_if_confirmed(user):
+    """If user is member of confirmed team, return team object. Otherwise None."""
+    team_object = Team.objects.filter(name=team_of_user(user))
+    if team_object.exists():
+        team_object = team_object.first()
+        if team_object.confirmed:
+            return team_object
+    return None
