@@ -1,6 +1,12 @@
 from django import forms
 
-from .models import Membership, Team
+from .models import Membership, Team, Point
+
+
+class PointPhotoForm(forms.ModelForm):
+    class Meta:
+        model = Point
+        fields = ["photo"]
 
 
 class ConfirmPhoto(forms.ModelForm):

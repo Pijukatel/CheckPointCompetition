@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 {% load competition_template_utils %}
 {% block content %}
-
-    <p>Name: {{ object.name }}</p>
-    <p>Description: {{ object.description }}</p>
-    <p>Longitudinal: {{ object.gps_lon }}</p>
-    <p>Lateral: {{ object.gps_lat }}</p>
-    <img src="{{ object.photo.url }}" width="400" height="400"></img>
-
-    {% to_list object as objects%}
-    {% include "competition/components/map.html" with objects=objects %}
+    <ul>Checkpoint details:
+        <li>Name: {{ checkpoint.name }}</li>
+        <li>Description: {{ checkpoint.description }}</li>
+        <li>Longitudinal: {{ checkpoint.gps_lon }}</li>
+        <li>Lateral: {{ checkpoint.gps_lat }}</li>
+    </ul>
+    <img src="{{ checkpoint.photo.url }}" width="400" height="400"></img>
+    {% to_list checkpoint as checkpoints%}
+    {% include "competition/components/map.html" with objects=checkpoints %}
+    {% block point %}
+    {% endblock point %}
 
 {% endblock content %}
 

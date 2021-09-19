@@ -12,11 +12,12 @@ from django.utils.decorators import method_decorator
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from competition.forms import AddMembersForm, ConfirmPhoto
-from competition.models import Membership, Team, Point
-from competition.utils import only_team_member
+from competition.forms import AddMembersForm, ConfirmPhoto, PointPhotoForm
+from competition.models import Membership, Team, Point, CheckPoint
+from competition.utils import only_team_member, get_existing_team_if_confirmed
 from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
 from competition.views_generic import ConfirmationView
+from competition.templatetags.competition_template_utils import team_of_user
 
 
 def home(request):
@@ -182,11 +183,42 @@ class TeamDelete(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("home")
 
 
-@method_decorator(only_team_member, name="post")
-@method_decorator(only_team_member, name="get")
-class PointUpdate(GetPoint, NoEditForConfirmed, UpdateView):
-    model = Point
-    fields = ["photo"]
+def checkpoint_view(request, *args, **kwargs):
+    """Non standard view that shows checkpoint details and for users that are members of team it also shows
+    point details with option to edit Point photo if not confirmed yet."""
+    checkpoint = CheckPoint.objects.get(name=kwargs['pk'])
+    context = {}
+    context.update({"checkpoint": checkpoint})
+    if request.user.is_authenticated:
+        if team_object := get_existing_team_if_confirmed(user=request.user):
+            point = Point.objects.get(team=team_object, checkpoint_id=kwargs['pk'])
+            if request.POST:
+                form = PointPhotoForm(request.POST, request.FILES, instance=point)
+            else:
+                form = PointPhotoForm(None)
+            if form.is_valid() and not point.confirmed:
+                form.save()
+            context.update({"point_photo": point.photo, "deny_reason": point.deny_reason,
+                            "point_confirmed": point.confirmed, "form": form, "team": team_object.name})
+            return render(request, "competition/components/checkpoint_detail_confirmed_team.html", context)
+    return render(request, "competition/checkpoint_detail.html", context)
+
+
+class CheckpointList(ListView):
+    model = CheckPoint
+    template_name = "competition/checkpoint_list.html"
+
+    def get_context_data(self, **kwargs):
+        """Adding team members info to extra context."""
+        if not self.extra_context:
+            self.extra_context = {}
+        if self.request.user.is_authenticated:
+            if team_object := get_existing_team_if_confirmed(user=self.request.user):
+                self.template_name = "competition/checkpoint_list_confirmed_team.html"
+                points = Point.objects.filter(team=team_object).order_by('checkpoint_id')
+                self.extra_context.update({"team_object": team_object, "checkpoints": self.object_list})
+                self.object_list = zip(self.object_list, points)
+        return super().get_context_data(**kwargs)
 
 
 class PointDetail(GetPoint, DetailView):
@@ -201,12 +233,3 @@ class PointDetail(GetPoint, DetailView):
         self.extra_context.update({"team_photo": team_photo, "checkpoint_photo": checkpoint_photo, })
 
         return super().get_context_data(**kwargs)
-
-
-class PointList(ListView):
-    model = Point
-
-    def get(self, request, *args, **kwargs):
-        """Adding team members info to extra context."""
-        self.queryset = Point.objects.filter(team=kwargs["team"])
-        return super().get(request, *args, **kwargs)
