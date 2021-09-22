@@ -5,95 +5,70 @@
 
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Checkpoint competition">
     <meta name="author" content="Pijukatel">
     <meta name="generator" content="???">
     <title>Checkpoint competition</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
 
-    <link href="//cdn.muicss.com/mui-0.10.3/css/mui.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="{% static 'css/script.css' %}">
-    <script src="//cdn.muicss.com/mui-0.10.3/js/mui.min.js"></script>
-    <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script src="{% static 'js/script.js' %}"></script>
 </head>
 <body>
-<div id="sidedrawer" class="mui--no-user-select">
-    <div id="sidedrawer-brand" class="mui--appbar-line-height">
-    <span class="mui--text-title"><a href="{% url 'home' %}">Home</a></span>
-    </div>
-    <div class="mui-divider"></div>
-    <ul>
-        <li>
-            <strong>Overview</strong>
+    <main>
+        <header>
+            {% block header %}
+            {% endblock header %}
+            <div id="navs">
+                <nav id="main_navbar">
                 <ul>
                     <li><a href="{% url 'teams' %}">Teams</a></li>
                     <li><a href="{% url 'users' %}">Users</a></li>
                     <li><a href="{% url 'checkpoints' %}">Checkpoints</a></li>
                 </ul>
-        </li>
-    </ul>
-</div>
+                </nav>
 
-<header id="header">
-<div class="mui-appbar mui--appbar-line-height">
-    <div class="mui-container-fluid">
-        <table width="100%">
-            <tr style="vertical-align:middle;">
-                <td class="mui--appbar-height">
-                    <a class="sidedrawer-toggle mui--visible-xs-inline-block mui--visible-sm-inline-block js-show-sidedrawer">☰</a>
-                    <a class="sidedrawer-toggle mui--hidden-xs mui--hidden-sm js-hide-sidedrawer">☰</a>
-                    {% block header %}
-                    {% endblock header %}
-                </td>
-                <td class="mui--appbar-height" align="right">
-
-
-                    {%  if user.is_authenticated %}
-                        {% team_of_user user as team %}
-                        User: <a class="mui--text-light" href="{% url 'user' %}"> {{ request.user }} |</a>
-                        <a class="mui--text-light" href="{% url 'logout' %}">Logout |</a>
-                        {% if team %}
-                            Team: <a class="mui--text-light" href="{% url 'team' team%}"> {{ team }} |</a>
-                            {% else %}
-                            Team: <a class="mui--text-light" href="{% url 'team_create'%}"> Create new team |</a>
+                <nav id="user_navbar">
+                    <ul>
+                        {%  if user.is_authenticated %}
+                            {% team_of_user user as team %}
+                                <li> User: <a  href="{% url 'user' %}"> {{ request.user }}</a></li>
+                                <li> <a  href="{% url 'logout' %}">Logout</a></li>
+                                {% if team %}
+                                    <li> Team: <a  href="{% url 'team' team%}"> {{ team }} </a></li>
+                                {% else %}
+                                    <li> Team: <a  href="{% url 'team_create'%}"> Create new team </a></li>
+                                {% endif %}
+                        {% else %}
+                            <li> User: {{ request.user }} </li>
+                            <li> <a  href="{% url 'login' %}">Login</a> </li>
+                            <li> <a  href="{% url 'register' %}">Create Account</a> </li>
                         {% endif %}
-                    {% else %}
-                        User: <span class="mui--text-light"> {{ request.user }} |</span>
-                        <a class="mui--text-light" href="{% url 'login' %}">Login |</a>
-                        <a class="mui--text-light" href="{% url 'register' %}">Create Account |</a>
-                    {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </header>
 
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
-</header>
+        <section id="content_container">
+            <section id="messages">
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </section>
+            <section id="content">
+                {% block content %}
+                {% endblock content %}
+            </section>
+        </section>
 
-<div id="content-wrapper">
-    <br><br><br><br>
-
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-
-    {% block content %}
-    {% endblock content %}
-</div>
-
-<footer id="footer">
-    <div class="mui-container-fluid">
-
-        {% block footer %}
-        {% endblock footer %}
-    </div>
-</footer>
+        <footer>
+            {% block footer %}
+            {% endblock footer %}
+        </footer>
+    </main>
 </body>
 
 </html>
