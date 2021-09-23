@@ -1,0 +1,11 @@
+header a {
+    color: lightblue;
+}
+
+header a:link,header a:visited  {
+    color: white;
+}
+
+header a:hover{
+    color: #f8b6b6;
+}
