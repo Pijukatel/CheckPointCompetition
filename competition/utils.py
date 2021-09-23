@@ -35,15 +35,16 @@ def only_team_member(func):
         """Only team members can continue.
         Redirect others to login and give explanation message."""
 
-        if "team" in kwargs:
-            team = Team.objects.get(name=kwargs["team"])
-        else:
-            team = Team.objects.get(name=kwargs["pk"])
+        if request.user.is_authenticated:
+            if "team" in kwargs:
+                team = Team.objects.get(name=kwargs["team"])
+            else:
+                team = Team.objects.get(name=kwargs["pk"])
 
-        membership = Membership.objects.filter(user=request.user, team=team)
+            membership = Membership.objects.filter(user=request.user, team=team)
 
-        if membership.exists():
-            return func(request, *args, **kwargs)
+            if membership.exists():
+                return func(request, *args, **kwargs)
 
         messages.add_message(request,
                              messages.INFO,

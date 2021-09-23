@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-
-    <div>User: {{ object }}</div>
-    <div>Joined: {{ object.date_joined }}</div>
-    <div>First name: {{ object.first_name }}</div>
-    <div>Team:
+    <ul> User Details:
+    <li>User: {{ object }}</li>
+    <li>Joined: {{ object.date_joined }}</li>
+    <li>First name: {{ object.first_name }}</li>
+    <li>Team:
         {% if view.extra_context.team  %}
             {{ view.extra_context.team }} <a href="{% url 'leave_team'%}"> Leave team </a>
         {% else %}
             <a href="{% url 'team_create'%}"> Create team </a>
         {% endif %}
-    </div>
+    </li>
+    </ul>
 
 {% endblock content %}
 
