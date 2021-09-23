@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-
     <ol> List of checkpoints:
     {% for object in object_list %}
         <li><a href="{% url 'checkpoint' object.name %}">{{ object.name }}</a></li>
@@ -8,6 +7,5 @@
     </ol>
     <p>Map with all checkpoints:</p>
     {% include "competition/components/map.html" with objects=object_list %}
-
 {% endblock content %}
 

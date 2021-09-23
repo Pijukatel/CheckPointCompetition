@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-
     <ol> List of checkpoints
         {% if team_object %}
             {% if team_object.confirmed %}
@@ -28,6 +27,5 @@
     </ol>
     <p>Map with all checkpoints:</p>
     {% include "competition/components/map.html" with objects=checkpoints %}
-
 {% endblock content %}
 
