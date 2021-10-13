@@ -6,8 +6,8 @@
     <form method="POST">
         {% csrf_token  %}
         {{ form.as_p }}
-        <input id="confirm_button" type="submit" name="Confirm photo" value="True">
-        <input id="deny_button" type="submit" name="Confirm photo" value="False">
+        <button id="confirm_button" type="submit" name="Confirm photo" value="True">Confirm</button>
+        <button id="deny_button" type="submit" name="Confirm photo" value="False">Deny</button>
     </form>
 
 {% endblock content %}
