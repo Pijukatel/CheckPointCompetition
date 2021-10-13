@@ -14,10 +14,15 @@
     </ul>
 
     <p>Photo:</p>
+    {% if not object.confirmed %}
+        <div>
+            <a href="{% url "team_update" object.name %}"> Upload photo. </a>
+        </div>
+    {% endif %}
     {% if object.photo %}
-        <img src="{{ object.photo.url }}" width="400" height="400"></img>
-    {% else %}
-        <a href="{% url "team_update" object.name %}"> Upload photo. </a>
+        <div>
+            <img src="{{ object.photo.url }}" width="400" height="400"></img>
+        </div>
     {% endif %}
 
     <ul>Members:
