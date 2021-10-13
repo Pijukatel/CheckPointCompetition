@@ -74,6 +74,18 @@ def test_team_detail_do_not_show_photo_link_when_confirmed_photo(client_with_log
                  encoding=response.charset) not in response.content
 
 
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+def test_team_detail_reset_deny_reason_after_update(client_with_logged_user1):
+    team = Team.objects.get(name=G.team1_name)
+    team.deny_reason = "some_reason"
+    team.save()
+    with open("competition/fixtures/test_image.jpg", "rb") as fp:
+        client_with_logged_user1.post(f"/team/{G.team1_name}/update/", {"photo": fp}, follow=True)
+    team.refresh_from_db()
+    assert team.deny_reason == ""
+
+
 @pytest.mark.usefixtures("load_registered_user1")
 @pytest.mark.django_db
 def test_create_team(client_with_logged_user1):

@@ -174,6 +174,11 @@ class TeamUpdate(LoginRequiredMixin, NoEditForConfirmed, UpdateView):
     template_name = "competition/team_update.html"
     fields = ["photo"]
 
+    def form_valid(self, form):
+        """Delete deny reason when updated."""
+        self.object.deny_reason = ""
+        return super().form_valid(form)
+
 
 @method_decorator(only_team_member, name="post")
 @method_decorator(only_team_member, name="get")
@@ -198,6 +203,7 @@ def checkpoint_view(request, *args, **kwargs):
                 form = PointPhotoForm(None)
             if form.is_valid() and not point.confirmed:
                 form.save()
+                point.deny_reason = ""  # Reset deny reason with update.
             context.update({"point_photo": point.photo, "deny_reason": point.deny_reason,
                             "point_confirmed": point.confirmed, "form": form, "team": team_object.name})
             return render(request, "competition/components/checkpoint_detail_confirmed_team.html", context)

@@ -29,6 +29,27 @@ def test_update_point_post_by_team_member_template(client_with_logged_user1):
     assert Point.objects.all()[0].photo.name == f"points/{G.test_image_name}"
 
 
+@pytest.mark.usefixtures("delete_test_point_image")
+@pytest.mark.usefixtures("load_point1")
+@pytest.mark.usefixtures("load_checkpoint1")
+@pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
+@pytest.mark.django_db
+def test_update_point_post_deletes_deny_reason(client_with_logged_user1):
+    point = Point.objects.all()[0]
+    point.deny_reason = ""
+    point.save()
+    with open("competition/fixtures/test_image.jpg", "rb") as fp:
+        response = client_with_logged_user1.post(f"/checkpoint/{G.checkpoint1_name}/",
+                                                 {"Upload photo": "Photo.jpg",
+                                                  "photo": fp},
+                                                 follow=True)
+    assertTemplateUsed(response, "/".join([G.APP_NAME, "components/checkpoint_detail_confirmed_team.html"]))
+    assertTemplateUsed(response, "/".join([G.APP_NAME, "components/point_form.html"]))
+    point.refresh_from_db()
+    assert point.photo.name == f"points/{G.test_image_name}"
+    assert point.deny_reason == ""
+
+
 @pytest.mark.usefixtures("load_point1")
 @pytest.mark.usefixtures("load_checkpoint1")
 @pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
@@ -91,4 +112,3 @@ def test_auto_create_points_for_confirmed_team():
     for checkpoint in checkpoints:
         assert Point.objects.filter(team=team, checkpoint=checkpoint).exists()
     assert len(checkpoints) == len(Point.objects.all())
-
