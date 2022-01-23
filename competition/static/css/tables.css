@@ -1,9 +1,16 @@
-div#checkpointTable {
+div.checkpointTable {
     display: table;
 }
 
-div#tableRow {
+div.tableRow {
     display: table-row;
+}
+
+div.cellHalfRow {
+    display: table-cell;
+    width: 50%;
+    height: 400px;
+    padding: 1px;
 }
 
 div#tableCellDetail {

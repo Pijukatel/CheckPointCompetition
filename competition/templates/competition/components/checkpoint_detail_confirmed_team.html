@@ -2,25 +2,32 @@
 {% load competition_template_utils %}
 {% block point %}
     {%  if user.is_authenticated %}
-        <ul>Team's point:
+        Team's point:
             {% team_of_user user as team %}
             {% if team %}
-                <li>Confirmed: {{ point_confirmed }}</li>
+
                 {% if point_photo.name %}
-                    <li>Photo: <img src="{{ point_photo.url }}" width="400" height="400"></img></li>
+                    <img src="{{ point_photo.url }}" width="100%" height="100%"></img>
                 {% else %}
-                    <li>Photo: Not uploaded yet</li>
+                    <div>
+                        Photo: Not uploaded yet
+                    </div>
                 {% endif %}
+                <div>
+                    Confirmed: {{ point_confirmed }}
+                </div>
                 {% if point_confirmed == False %}
-                    {% if deny_reason %}
-                        Photo deny reason: {{ deny_reason }}
-                    {% else %}
-                        Waiting for confirmation. Can be changed.
-                    {% endif %}
+                    <div>
+                        {% if deny_reason %}
+                            Photo deny reason: {{ deny_reason }}
+                        {% else %}
+                            Waiting for confirmation. Can be changed.
+                        {% endif %}
+                    </div>
                     {% include "competition/components/point_form.html" %}
                 {% endif %}
             {% endif %}
-        </ul>
+
     {% endif %}
 {% endblock point %}
 
