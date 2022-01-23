@@ -1,16 +1,42 @@
 {% extends "base.html" %}
 {% load competition_template_utils %}
 {% block content %}
-    <ul>Checkpoint details:
-        <li>Name: {{ checkpoint.name }}</li>
-        <li>Description: {{ checkpoint.description }}</li>
-        <li>Longitudinal: {{ checkpoint.gps_lon }}</li>
-        <li>Lateral: {{ checkpoint.gps_lat }}</li>
-    </ul>
-    <img src="{{ checkpoint.photo.url }}" width="400" height="400"></img>
-    {% to_list checkpoint as checkpoints%}
-    {% include "competition/components/map.html" with objects=checkpoints %}
-    {% block point %}
-    {% endblock point %}
+    <div class="checkpointTable">
+        <div class="tableRow">
+            <div id="tableCellDetail">
+
+                <ul>Checkpoint details:
+                    <li>Name: {{ checkpoint.name }}</li>
+                    <li>Description: {{ checkpoint.description }}</li>
+                    <li>Longitudinal: {{ checkpoint.gps_lon }}</li>
+                    <li>Lateral: {{ checkpoint.gps_lat }}</li>
+                </ul>
+
+            </div>
+            <div id="tableCellMap">
+                {% to_list checkpoint as checkpoints%}
+                {% include "competition/components/map.html" with objects=checkpoints %}
+
+                <!--{% include "competition/components/map.html" with objects=checkpoints %}
+            -->
+            </div>
+        </div>
+    </div>
+    <div border="10px" class="checkpointTable">
+        <div class="tableRow">
+            <div class="cellHalfRow">
+                Original
+                <img src="{{ checkpoint.photo.url }}" width="100%" height="100%"></img>
+            </div>
+            <div class="cellHalfRow">
+                {% block point %}
+                {% endblock point %}
+            </div>
+        </div>
+    </div>
+
+
+
+
 {% endblock content %}
 

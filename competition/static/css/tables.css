@@ -1,0 +1,27 @@
+div.checkpointTable {
+    display: table;
+}
+
+div.tableRow {
+    display: table-row;
+}
+
+div.cellHalfRow {
+    display: table-cell;
+    width: 50%;
+    height: 400px;
+    padding: 1px;
+}
+
+div#tableCellDetail {
+    display: table-cell;
+    width: 250px;
+    height: 400px;
+    vertical-align: top;
+}
+div#tableCellMap {
+    display: table-cell;
+    width: 550px;
+    height: 400px;
+    vertical-align: top;
+}
