@@ -25,6 +25,8 @@ class Globals(NamedTuple):
     team2_name = "TestTeam2"
     test_image_name = "test_image.jpg"
     test_point_photo_name = "SomePhoto.jpg"
+    test_address='http://127.0.0.1:8000/'
+    path_to_gecko_driver = r'geckodriver\geckodriver.exe'
 
 
 G = Globals
