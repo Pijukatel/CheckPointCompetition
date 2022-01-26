@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-    <p>{{ object }}</p>
+    <div id="TeamName">{{ object.name }}</div>
     <img src="{{ view.extra_context.photo.url }}" width="400" height="400"></img></p>
 
     <form method="POST">

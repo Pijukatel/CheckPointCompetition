@@ -149,3 +149,23 @@ def delete_test_point_image():
     """Cleanup fixture to remove test image after uploading it in test."""
     yield None
     os.remove(f'static/images/points/{G.test_image_name}')
+
+
+
+from selenium import webdriver
+
+@pytest.fixture(scope='session')
+def browser_factory():
+
+    class ContextBrowser:
+        def __init__(self):
+            path_to_gecko_driver_exe = os.path.join(os.path.dirname(__file__), G.path_to_gecko_driver)
+            self.driver = webdriver.Firefox(executable_path=path_to_gecko_driver_exe)
+
+        def __enter__(self):
+            return self.driver
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.driver.quit()
+
+    return ContextBrowser
