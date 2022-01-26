@@ -169,19 +169,3 @@ def browser_factory():
             self.driver.quit()
 
     return ContextBrowser
-
-'''
-@pytest.fixture
-def browser_with_logged_new_user(client, web_browser, get_new_name, live_server):
-    """Return browser with already logged in new user without need to fill in login form."""
-    username = next(get_new_name)
-    User.objects.create_user(username=username, password=G.default_password).save()
-    client = Client()
-    client.login(username=username, password=G.default_password)
-    cookie = client.cookies['sessionid']
-    web_browser.get(G.test_address)
-    web_browser.add_cookie({'name': 'sessionid', 'value': cookie.value, 'secure': False, 'path': '/'})
-    web_browser.refresh()
-    web_browser.username = username
-    return web_browser
-'''

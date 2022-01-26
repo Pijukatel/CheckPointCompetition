@@ -2,13 +2,24 @@
 """
 Following procedure is tested which simulates expected use.
 
+Current state:
+
+4 user creation
+2 teams creation
+Upload team photos
+Admin login
+each team confirmation
+
+Desired state:
+
 Competition countdown
 Competition pre-start (open for registration)
 
 4 user creation
 2 teams creation
+Upload team photos
+Admin login
 each team confirmation
-
 
 competition start
 4 user creation
@@ -30,6 +41,8 @@ team3 visits checkpoint (but upload photo is disabled) -> competition end
 """
 
 import pytest
+from PIL import Image
+
 from .globals_for_tests import G
 from ..models import Team, Membership
 from selenium.webdriver.support.ui import WebDriverWait, Select
@@ -38,21 +51,15 @@ from selenium.webdriver.common.by import By
 from django.contrib.auth.models import User
 
 
-# Competition countdown
-# Competition pre-start (open for registration)
-# 4 user creation
-# 2 teams creation
-# Upload team photos
-# Admin login
-# each team confirmation
-
 class TestSetup:
     wait = 1
     teams = {
         "TestTeam1": ("TestUser1", "TestUser2"),
         "TestTeam2": ("TestUser3", "TestUser4"),
     }
-    password = "TestPassword123"
+    password = G.user1_password
+    image_name = "test_image.jpg"
+    image = Image.frombytes("L", (3, 2), b'\xbf\x8cd\xba\x7f\xe0\xf0\xb8t\xfe')
 
 
 def create_user(username, browser):
@@ -99,8 +106,30 @@ def add_user_to_team(team_name, username, browser):
     assert Membership.objects.filter(user__username=username, team__name=team_name).exists()
 
 
+def logged_user_in_team_upload_team_photo(team_name, image_path, browser):
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, team_name)))
+    browser.find_element_by_link_text(team_name).click()
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, "Upload photo.")))
+    browser.find_element_by_link_text("Upload photo.").click()
+    browser.find_element_by_id("id_photo").send_keys(str(image_path))
+    browser.find_element_by_id("upload_photo_button").click()
+    assert Team.objects.filter(name=team_name)[0].photo.name.startswith(f"teams/{TestSetup.image_name[:-4]}")
+
+
+def staff_user_confirm_team_photo(browser):
+    browser.get(G.test_address + "team/photo-confirm/")
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "confirm_button")))
+    team_name = browser.find_element_by_id("TeamName").text
+    browser.find_element_by_id("confirm_button").click()
+    assert Team.objects.get(name=team_name).confirmed
+
+
 @pytest.mark.functional
-def test_system(live_server, browser_factory):
+def test_system(live_server, browser_factory, tmp_path, load_registered_user_with_is_staff):
+    # Prepare universal image fro download
+    image_path = tmp_path / TestSetup.image_name
+    TestSetup.image.save(image_path)
+
     # Register first user
     with browser_factory() as browser:
         browser.get(G.test_address)
@@ -127,13 +156,23 @@ def test_system(live_server, browser_factory):
         login(TestSetup.teams["TestTeam1"][0], browser)
         add_user_to_team("TestTeam1", TestSetup.teams["TestTeam1"][1], browser)
 
-    # Third user creates team and adds fourth user
+    # Third user creates team and adds fourth user, upload team photo
     with browser_factory() as browser:
         browser.get(G.test_address)
         login(TestSetup.teams["TestTeam2"][0], browser)
         logged_user_creates_team("TestTeam2", browser)
         add_user_to_team("TestTeam2", TestSetup.teams["TestTeam2"][1], browser)
+        logged_user_in_team_upload_team_photo("TestTeam2", image_path, browser)
 
-    # Both teams upload photos
+    # User1 uploads team1 photo
+    with browser_factory() as browser:
+        browser.get(G.test_address)
+        login(TestSetup.teams["TestTeam1"][0], browser)
+        logged_user_in_team_upload_team_photo("TestTeam1", image_path, browser)
 
-    # Both photos are confirmed
+    # Both photos are confirmed by staff user
+    with browser_factory() as browser:
+        browser.get(G.test_address)
+        login(G.user_staff_name, browser)
+        staff_user_confirm_team_photo(browser)
+        staff_user_confirm_team_photo(browser)
