@@ -13,7 +13,6 @@ def test_view_point_template(client_with_logged_user1):
     assertTemplateUsed(response, "/".join([G.APP_NAME, "point_detail.html"]))
 
 
-@pytest.mark.usefixtures("delete_test_point_image")
 @pytest.mark.usefixtures("load_point1")
 @pytest.mark.usefixtures("load_checkpoint1")
 @pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
@@ -29,7 +28,7 @@ def test_update_point_post_by_team_member_template(client_with_logged_user1):
     assert Point.objects.all()[0].photo.name == f"points/{G.test_image_name}"
 
 
-@pytest.mark.usefixtures("delete_test_point_image")
+@pytest.mark.usefixtures("delete_test_image")
 @pytest.mark.usefixtures("load_point1")
 @pytest.mark.usefixtures("load_checkpoint1")
 @pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")

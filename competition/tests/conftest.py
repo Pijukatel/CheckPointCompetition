@@ -1,8 +1,9 @@
-import pytest
 import os
 
-from django.test import Client
+import pytest
 from django.core.management import call_command
+from django.test import Client
+from selenium import webdriver
 
 from competition.tests.globals_for_tests import G
 
@@ -137,26 +138,26 @@ def client_with_logged_user_staff(load_registered_user_with_is_staff):
     return client
 
 
-@pytest.fixture()
-def delete_test_team_image():
-    """Cleanup fixture to remove test image after uploading it in test."""
+@pytest.fixture(autouse=True, scope="session")
+def delete_test_images():
     yield None
-    os.remove(f'static/images/teams/{G.test_image_name}')
+    for root, dirs, files in os.walk(f"static/images/", topdown=False):
+        for name in files:
+            if name.startswith("test_image") and name.endswith(".jpg"):
+                os.remove(os.path.join(root, name))
 
 
 @pytest.fixture()
-def delete_test_point_image():
-    """Cleanup fixture to remove test image after uploading it in test."""
-    yield None
-    os.remove(f'static/images/points/{G.test_image_name}')
-
-
-
-from selenium import webdriver
+def delete_test_image():
+    """Fixture to remove test image before the test that is going to create it."""
+    for folder in ("images", "points", "teams"):
+        try:
+            os.remove(f'static/images/{folder}/{G.test_image_name}')
+        except FileNotFoundError:
+            pass
 
 @pytest.fixture(scope='session')
 def browser_factory():
-
     class ContextBrowser:
         def __init__(self):
             path_to_gecko_driver_exe = os.path.join(os.path.dirname(__file__), G.path_to_gecko_driver)

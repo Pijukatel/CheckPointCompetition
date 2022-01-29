@@ -236,7 +236,6 @@ def test_team_update_unauthorized(client_with_logged_user2):
                  encoding=response.charset) in response.content
 
 
-@pytest.mark.usefixtures("delete_test_team_image")
 @pytest.mark.usefixtures("load_registered_user1_with_team1")
 @pytest.mark.django_db
 def test_team_update_photo_redirect(client_with_logged_user1):
@@ -246,7 +245,7 @@ def test_team_update_photo_redirect(client_with_logged_user1):
         assertTemplateUsed(response, "/".join([G.APP_NAME, "team_detail.html"]))
 
 
-@pytest.mark.usefixtures("delete_test_team_image")
+@pytest.mark.usefixtures("delete_test_image")
 @pytest.mark.usefixtures("load_registered_user1_with_team1")
 @pytest.mark.django_db
 def test_team_update_photo_team_updated(client_with_logged_user1):
