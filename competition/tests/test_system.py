@@ -44,7 +44,7 @@ import pytest
 from PIL import Image
 
 from .globals_for_tests import G
-from ..models import Team, Membership
+from ..models import Team, Membership, Point
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -124,9 +124,40 @@ def staff_user_confirm_team_photo(browser):
     assert Team.objects.get(name=team_name).confirmed
 
 
+def logged_user_in_team_upload_point_photo(browser, team_name, checkpoint_name, image_path):
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, "Checkpoints")))
+    browser.find_element_by_link_text("Checkpoints").click()
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, checkpoint_name)))
+    browser.find_element_by_link_text(checkpoint_name).click()
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "id_photo")))
+    browser.find_element_by_id("id_photo").send_keys(str(image_path))
+    browser.find_element_by_id("upload_photo_button").click()
+
+    point_querry = Point.objects.filter(team_id=team_name, checkpoint_id=checkpoint_name)
+    assert point_querry.exists()
+    point = point_querry.get()
+    assert not point.confirmed
+    assert point.photo.name.startswith(f"points/{TestSetup.image_name[:-4]}")
+    assert not point.deny_reason
+
+
+def staff_user_confirm_point_photo(browser):
+    browser.get(G.test_address + "point/photo-confirm/")
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "confirm_button")))
+    browser.find_element_by_id("confirm_button").click()
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "TeamName")))
+    team_name = browser.find_element_by_id("TeamName").text
+    checkpoint_name = browser.find_element_by_id("CheckpointName").text
+    point = Point.objects.get(checkpoint_id=checkpoint_name, team_id=team_name)
+    assert point.confirmed
+    assert not point.deny_reason
+
+
 @pytest.mark.functional
+@pytest.mark.usefixtures("load_checkpoint1")
+@pytest.mark.usefixtures("load_checkpoint2")
 def test_system(live_server, browser_factory, tmp_path, load_registered_user_with_is_staff):
-    # Prepare universal image fro download
+    # Prepare universal image for download
     image_path = tmp_path / TestSetup.image_name
     TestSetup.image.save(image_path)
 
@@ -176,3 +207,28 @@ def test_system(live_server, browser_factory, tmp_path, load_registered_user_wit
         login(G.user_staff_name, browser)
         staff_user_confirm_team_photo(browser)
         staff_user_confirm_team_photo(browser)
+
+    # Start competition
+    # Register another other team
+
+    # TODO: Add time keeping test for leaderboard (check photo upload datetime)
+    # Team 1,2 visit checkpoint 1
+    with browser_factory() as browser:
+        browser.get(G.test_address)
+        team = "TestTeam1"
+        login(TestSetup.teams[team][1], browser)
+        logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
+
+    with browser_factory() as browser:
+        browser.get(G.test_address)
+        team = "TestTeam2"
+        login(TestSetup.teams[team][1], browser)
+        logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
+
+    # Admin confirms visits
+    with browser_factory() as browser:
+        browser.get(G.test_address)
+        login(G.user_staff_name, browser)
+        staff_user_confirm_point_photo(browser)
+        staff_user_confirm_point_photo(browser)
+    # Leader board
