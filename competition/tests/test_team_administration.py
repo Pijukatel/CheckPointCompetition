@@ -1,3 +1,4 @@
+import html
 from unittest.mock import patch
 
 import pytest
@@ -14,6 +15,36 @@ def create_team(client, name=G.team1_name):
                            {"name": name},
                            follow=True)
     return response
+
+
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "template, url", [
+        ("home.html", "/team/create/"),
+    ])
+def test_tempalete_cant_create_another_team_if_in_team_already(client_with_logged_user1, template, url):
+    """Test redirects to login page for pages that require login."""
+    response = client_with_logged_user1.get(url, follow=True)
+    assert response.status_code == 200
+    assertTemplateUsed(response, "/".join([G.APP_NAME, template]))
+    assert ("You are already member of team and you can't create another team." in
+            html.unescape(response.content.decode(response.charset)))
+
+
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "template, url", [
+        ("login.html", "/team/create/"),
+        ("login.html", f"/team/{G.team1_name}/update/"),
+        ("login.html", f"/team/{G.team1_name}/delete/")
+    ])
+def test_template_by_url_with_anonymous_require_login(client, template, url):
+    """Test redirects to login page for pages that require login."""
+    response = client.get(url, follow=True)
+    assert response.status_code == 200
+    assertTemplateUsed(response, "/".join([G.APP_NAME, template]))
 
 
 @pytest.mark.usefixtures("load_registered_user1_with_team1")
@@ -141,6 +172,17 @@ def test_add_member_to_team(client_with_logged_user1):
                                   {"user": User.objects.get(username=G.user2_name).id},
                                   follow=True)
     assert Membership.objects.filter(user__username=G.user2_name, team__name=G.team1_name).exists()
+
+
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.usefixtures("load_registered_user2_with_team2")
+@pytest.mark.django_db
+def test_add_another_teams_member_to_team(client_with_logged_user1):
+    client_with_logged_user1.post(f"/team/{G.team1_name}/add_member/",
+                                  {"user": User.objects.get(username=G.user2_name).id},
+                                  follow=True)
+    assert not Membership.objects.filter(user__username=G.user2_name, team__name=G.team1_name).exists()
+    assert Membership.objects.filter(user__username=G.user2_name, team__name=G.team2_name).exists()
 
 
 @pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
