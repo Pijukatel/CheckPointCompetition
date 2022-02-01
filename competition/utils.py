@@ -53,6 +53,21 @@ def only_team_member(func):
 
     return _only_team_member
 
+def only_non_team_member(func):
+    def _only_non_team_member(request, *args, **kwargs):
+        """Only user without team.
+        Redirect others to home and give explanation message."""
+
+        if not Membership.objects.get(user=request.user).team:
+            return func(request, *args, **kwargs)
+
+        messages.add_message(request,
+                             messages.INFO,
+                             "You are already member of team and you can't create another team.")
+        return HttpResponseRedirect(reverse("home"))
+
+    return _only_non_team_member
+
 
 def get_existing_team_if_confirmed(user):
     """If user is member of confirmed team, return team object. Otherwise None."""

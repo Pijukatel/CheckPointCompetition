@@ -14,7 +14,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from competition.forms import AddMembersForm, ConfirmPhoto, PointPhotoForm
 from competition.models import Membership, Team, Point, CheckPoint
-from competition.utils import only_team_member, get_existing_team_if_confirmed
+from competition.utils import only_team_member, get_existing_team_if_confirmed, only_non_team_member
 from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
 from competition.views_generic import ConfirmationView
 from competition.templatetags.competition_template_utils import team_of_user
@@ -153,6 +153,10 @@ class UserDelete(LoginRequiredMixin, SelfForUser, DeleteView):
     success_url = reverse_lazy("home")
 
 
+@method_decorator(login_required, name="post")
+@method_decorator(login_required, name="get")
+@method_decorator(only_non_team_member, name="post")
+@method_decorator(only_non_team_member, name="get")
 class TeamCreate(CreateView):
     model = Team
     template_name = "competition/team_create.html"
