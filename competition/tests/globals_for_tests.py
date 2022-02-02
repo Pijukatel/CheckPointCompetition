@@ -4,6 +4,7 @@ Motivation:
     2 - Single point of entry.
     3 - Possibility to easy use as parameters in parametrized tests(unlike fixtures!)"""
 from typing import NamedTuple
+import datetime
 
 
 class Globals(NamedTuple):
@@ -22,7 +23,9 @@ class Globals(NamedTuple):
     checkpoint2_lon = "12.012"
     checkpoint2_lat = "57.686"
     team1_name = "TestTeam1"
+    team1_photo_confirmation_date = datetime.datetime(year=2010,month=1,day=1,hour=1, minute=1)
     team2_name = "TestTeam2"
+    team2_photo_confirmation_date = datetime.datetime(year=2022, month=1, day=1, hour=1, minute=2)
     test_image_name = "test_image.jpg"
     test_point_photo_name = "SomePhoto.jpg"
     test_address='http://127.0.0.1:8000/'

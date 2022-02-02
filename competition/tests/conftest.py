@@ -17,60 +17,60 @@ def django_db_setup(django_db_setup, django_db_blocker):
         call_command('loaddata', 'test_user_1.json')
 '''
 
-
+"""
 @pytest.mark.django_db
 @pytest.fixture
-def load_registered_user1():
+def load_registered_user1_old():
     call_command('loaddata', 'test_user_1.json')
 
 
 @pytest.mark.django_db
 @pytest.fixture
-def load_registered_user1_with_team1():
+def load_registered_user1_with_team1_old():
     call_command('loaddata', 'test_user_1_with_team_1.json')
 
 
 @pytest.mark.django_db
 @pytest.fixture
-def load_registered_user1_with_confirmed_team1():
+def load_registered_user1_with_confirmed_team1_old():
     call_command('loaddata', 'test_user_1_with_confirmed_team_1.json')
 
 
 @pytest.mark.django_db
 @pytest.fixture
-def load_registered_users_1_2_with_team1():
+def load_registered_users_1_2_with_team1_old():
     call_command('loaddata', 'test_users_1_2_with_team_1.json')
 
 
 @pytest.mark.django_db
 @pytest.fixture
-def load_team2():
+def load_team2_old():
     call_command('loaddata', 'test_team_2.json')
 
 
 @pytest.mark.django_db
 @pytest.fixture
-def load_registered_user2_with_team2():
+def load_registered_user2_with_team2_old():
     call_command('loaddata', 'test_user_2_with_team_2.json')
 
 
 @pytest.mark.django_db
 @pytest.fixture
-def load_registered_user2_with_team2_no_photo():
+def load_registered_user2_with_team2_no_photo_old():
     call_command('loaddata', 'test_user_2_with_team_2_no_photo.json')
 
 
 @pytest.mark.django_db
 @pytest.fixture
-def load_registered_user2():
+def load_registered_user2_old():
     call_command('loaddata', 'test_user_2.json')
 
 
 @pytest.mark.django_db
 @pytest.fixture
-def load_registered_user_with_is_staff():
+def load_registered_user_with_is_staff_old():
     call_command('loaddata', 'test_user_with_is_staff.json')
-
+"""
 
 @pytest.mark.django_db
 @pytest.fixture
