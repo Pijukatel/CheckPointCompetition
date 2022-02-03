@@ -1,7 +1,6 @@
 import os
 
 import pytest
-from django.core.management import call_command
 from django.test import Client
 from selenium import webdriver
 
@@ -16,102 +15,6 @@ def django_db_setup(django_db_setup, django_db_blocker):
     with django_db_blocker.unblock():
         call_command('loaddata', 'test_user_1.json')
 '''
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_registered_user1():
-    call_command('loaddata', 'test_user_1.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_registered_user1_with_team1():
-    call_command('loaddata', 'test_user_1_with_team_1.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_registered_user1_with_confirmed_team1():
-    call_command('loaddata', 'test_user_1_with_confirmed_team_1.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_registered_users_1_2_with_team1():
-    call_command('loaddata', 'test_users_1_2_with_team_1.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_team2():
-    call_command('loaddata', 'test_team_2.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_registered_user2_with_team2():
-    call_command('loaddata', 'test_user_2_with_team_2.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_registered_user2_with_team2_no_photo():
-    call_command('loaddata', 'test_user_2_with_team_2_no_photo.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_registered_user2():
-    call_command('loaddata', 'test_user_2.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_registered_user_with_is_staff():
-    call_command('loaddata', 'test_user_with_is_staff.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_checkpoint1():
-    call_command('loaddata', 'test_checkpoint_1.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_checkpoint2():
-    call_command('loaddata', 'test_checkpoint_2.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_point1():
-    call_command('loaddata', 'test_point_1.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_point1_no_photo():
-    call_command('loaddata', 'test_point_1_no_photo.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_point1_confirmed():
-    call_command('loaddata', 'test_point_1_confirmed.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_point2():
-    call_command('loaddata', 'test_point_2.json')
-
-
-@pytest.mark.django_db
-@pytest.fixture
-def load_point3_of_team2():
-    call_command('loaddata', 'test_point_3_of_team2.json')
 
 
 @pytest.fixture
@@ -155,6 +58,7 @@ def delete_test_image():
             os.remove(f'static/images/{folder}/{G.test_image_name}')
         except FileNotFoundError:
             pass
+
 
 @pytest.fixture(scope='session')
 def browser_factory():
