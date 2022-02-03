@@ -64,7 +64,7 @@ def test_update_confirmed_point_post_by_team_member_template(client_with_logged_
                                                   "photo": fp},
                                                  follow=True)
     assertTemplateUsed(response, "/".join([G.APP_NAME, "components/checkpoint_detail_confirmed_team.html"]))
-    assert Point.objects.all()[0].photo.name == G.test_point_photo_name
+    assert Point.objects.all()[0].photo.name == f"point/{G.point1_image_name}"
 
 
 @pytest.mark.usefixtures("load_point1")
@@ -94,7 +94,7 @@ def test_update_point_post_by_non_team_member_template(client_with_logged_user2)
                                                   "photo": fp},
                                                  follow=True)
     assertTemplateUsed(response, "/".join([G.APP_NAME, "checkpoint_detail.html"]))
-    assert Point.objects.all()[0].photo.name == G.test_point_photo_name
+    assert Point.objects.all()[0].photo.name == f"point/{G.point1_image_name}"
 
 
 @pytest.mark.usefixtures("load_checkpoint2")

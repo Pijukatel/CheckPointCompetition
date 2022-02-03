@@ -1,6 +1,6 @@
 import pytest
 
-from ..models import Team, User, Membership
+from ..models import Team, User, Membership, CheckPoint, Point
 from .globals_for_tests import G
 from django.contrib.auth.hashers import make_password
 
@@ -19,6 +19,7 @@ def load_registered_user2():
     user.save()
     yield user
     user.delete()
+
 
 @pytest.fixture
 def load_registered_user_with_is_staff():
@@ -56,6 +57,7 @@ def load_registered_user1_with_team1(load_registered_user1, load_team1):
     yield load_registered_user1, team, membership
     membership.delete()
 
+
 @pytest.fixture
 def load_registered_user2_with_team2(load_registered_user2, load_team2):
     team = load_team2
@@ -64,11 +66,13 @@ def load_registered_user2_with_team2(load_registered_user2, load_team2):
     yield load_registered_user2, team, membership
     membership.delete()
 
+
 @pytest.fixture
 def load_registered_user2_with_team2_no_photo(load_registered_user2_with_team2):
     user, team, membership = load_registered_user2_with_team2
-    team.photo=""
+    team.photo = ""
     team.save()
+
 
 @pytest.fixture
 def load_registered_users_1_2_with_team1(load_registered_user1, load_registered_user2, load_team1):
@@ -89,3 +93,73 @@ def load_registered_user1_with_confirmed_team1(load_registered_user1_with_team1)
     team.save()
 
 
+@pytest.fixture
+def load_checkpoint1():
+    checkpoint = CheckPoint(name=G.checkpoint1_name, description=G.checkpoint1_description, gps_lon=G.checkpoint1_lon,
+                            gps_lat=G.checkpoint1_lat, photo=f"checkpoint/{G.checkpoint1_image_name}")
+    checkpoint.save()
+    yield checkpoint
+    checkpoint.delete()
+
+
+@pytest.fixture
+def load_checkpoint2():
+    checkpoint = CheckPoint(name=G.checkpoint2_name, description=G.checkpoint2_description, gps_lon=G.checkpoint2_lon,
+                            gps_lat=G.checkpoint2_lat, photo=f"checkpoint/{G.checkpoint2_image_name}")
+    checkpoint.save()
+    yield checkpoint
+    checkpoint.delete()
+
+
+@pytest.fixture
+def load_point1(load_team1, load_checkpoint1):
+    team = load_team1
+    checkpoint = load_checkpoint1
+    point = Point(team=team, checkpoint=checkpoint, photo=f"point/{G.point1_image_name}")
+    point.save()
+    # To fool auto-updated time.
+    Point.objects.filter(id=point.id).update(confirmation_date=G.point1_photo_confirmation_date)
+    yield point
+    point.delete()
+
+
+@pytest.fixture
+def load_point1_no_photo(load_point1):
+    point = load_point1
+    point.photo = ""
+    point.save()
+    # To fool auto-updated time.
+    Point.objects.filter(id=point.id).update(confirmation_date=G.point1_photo_confirmation_date)
+
+
+@pytest.fixture
+def load_point1_confirmed(load_point1):
+    point = load_point1
+    point.confirmed = True
+    point.save()
+    # To fool auto-updated time.
+    Point.objects.filter(id=point.id).update(confirmation_date=G.point1_photo_confirmation_date)
+
+
+@pytest.fixture
+def load_point2(load_team1, load_checkpoint2):
+    team = load_team1
+    checkpoint = load_checkpoint2
+    point = Point(team=team, checkpoint=checkpoint, photo=f"point/{G.point2_image_name}")
+    point.save()
+    # To fool auto-updated time.
+    Point.objects.filter(id=point.id).update(confirmation_date=G.point2_photo_confirmation_date)
+    yield point
+    point.delete()
+
+
+@pytest.fixture
+def load_point3(load_team2, load_checkpoint2):
+    team = load_team2
+    checkpoint = load_checkpoint2
+    point = Point(team=team, checkpoint=checkpoint, photo=f"point/{G.point3_image_name}")
+    point.save()
+    # To fool auto-updated time.
+    Point.objects.filter(id=point.id).update(confirmation_date=G.point3_photo_confirmation_date)
+    yield point
+    point.delete()
