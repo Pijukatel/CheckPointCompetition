@@ -8,6 +8,7 @@ from pytest_django.asserts import assertTemplateUsed
 
 from .globals_for_tests import G
 from ..models import Team, Membership, delete_empty_teams
+from ..views import TeamCreate
 
 
 def create_team(client, name=G.team1_name):
@@ -124,6 +125,8 @@ def test_create_team(client_with_logged_user1):
     assert response.status_code == 200
     team = Team.objects.filter(name=G.team1_name)
     assert team.exists()
+    assert bytes(TeamCreate.success_message.format(name=G.team1_name),
+                 encoding=response.charset) in response.content
 
 
 @pytest.mark.usefixtures("load_registered_user1")
