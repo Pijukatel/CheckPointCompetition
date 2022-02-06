@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from ..models import Membership
+from ..views import RegisterUser
 
 
 def register_test_user(client, username=G.user1_name, password=G.user1_password):
@@ -74,9 +75,11 @@ def test_register_redirect(client):
 
 @pytest.mark.django_db
 def test_register_user_created(client):
-    register_test_user(client)
+    response = register_test_user(client)
     user = User.objects.filter(username=G.user1_name)
     assert user.exists()
+    assert bytes(RegisterUser.success_message.format(username=G.user1_name),
+                 encoding=response.charset) in response.content
 
 
 @pytest.mark.django_db

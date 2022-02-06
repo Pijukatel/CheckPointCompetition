@@ -11,6 +11,7 @@ from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.messages.views import SuccessMessageMixin
 
 from competition.forms import AddMembersForm, ConfirmPhoto, PointPhotoForm
 from competition.models import Membership, Team, Point, CheckPoint
@@ -83,11 +84,15 @@ def add_team_member(request, pk):
     return render(request, "competition/team_add_member.html", context)
 
 
-class RegisterUser(CreateView):
+class RegisterUser(SuccessMessageMixin, CreateView):
     """Register view."""
     template_name = "competition/register.html"
     form_class = UserCreationForm
     success_url = reverse_lazy('login')
+    success_message = "{username} user created, you can now login."
+
+    def get_success_message(self, cleaned_data):
+        return self.success_message.format(username=self.object.username)
 
 
 def login_page(request):
@@ -157,10 +162,14 @@ class UserDelete(LoginRequiredMixin, SelfForUser, DeleteView):
 @method_decorator(login_required, name="get")
 @method_decorator(only_non_team_member, name="post")
 @method_decorator(only_non_team_member, name="get")
-class TeamCreate(CreateView):
+class TeamCreate(SuccessMessageMixin, CreateView):
     model = Team
     template_name = "competition/team_create.html"
     fields = ["name"]
+    success_message = "{name} team created, you can now invite others to the team."
+
+    def get_success_message(self, cleaned_data):
+        return self.success_message.format(name=self.object.name)
 
     def form_valid(self, form):
         """Assign currently signed user to join created team."""

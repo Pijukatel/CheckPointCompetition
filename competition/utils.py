@@ -25,7 +25,7 @@ def message_decorator_factory(message_level, message_content, condition_function
 
 
 staff_member_required_message = message_decorator_factory(
-    messages.INFO,
+    messages.ERROR,
     "Only staff members can confirm photos. Log in as staff member.",
     user_is_not_staff)
 
@@ -47,7 +47,7 @@ def only_team_member(func):
                 return func(request, *args, **kwargs)
 
         messages.add_message(request,
-                             messages.INFO,
+                             messages.ERROR,
                              "Only team members can do that. Log in as member of that team.")
         return HttpResponseRedirect(reverse("login"))
 
@@ -62,7 +62,7 @@ def only_non_team_member(func):
             return func(request, *args, **kwargs)
 
         messages.add_message(request,
-                             messages.INFO,
+                             messages.ERROR,
                              "You are already member of team and you can't create another team.")
         return HttpResponseRedirect(reverse("home"))
 
