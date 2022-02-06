@@ -1,0 +1,13 @@
+.Message_info {
+    font-weight: bold;
+}
+
+.Message_success {
+    color: #398607;
+    font-weight: bold;
+}
+
+.Message_debug, .Message_error, .Message_warning {
+    color: red;
+    font-weight: bold;
+}
