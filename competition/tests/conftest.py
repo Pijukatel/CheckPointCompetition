@@ -1,9 +1,11 @@
 import os
 
 import pytest
+from unittest import mock
 from django.test import Client
 from selenium import webdriver
-
+from datetime import datetime, timedelta
+from competition.middleware.time_middleware import Stage, redirect_to_countdown, return_normal_response
 from competition.tests.globals_for_tests import G
 
 '''
@@ -15,6 +17,47 @@ def django_db_setup(django_db_setup, django_db_blocker):
     with django_db_blocker.unblock():
         call_command('loaddata', 'test_user_1.json')
 '''
+
+
+@pytest.fixture(scope="session", autouse=True)
+def far_future():
+    return datetime.now() + timedelta(seconds=1000)
+
+
+@pytest.fixture(autouse=True)
+def in_competition(request, far_future):
+    if 'disable_default_time' in request.keywords:
+        yield
+    else:
+        now = datetime.now()
+        stages_start_times = (
+            Stage(now - timedelta(seconds=3), "countdown", redirect_to_countdown),
+            Stage(now - timedelta(seconds=2), "pre_registration", return_normal_response),
+            Stage(now - timedelta(seconds=1), "competition", return_normal_response),
+            Stage(far_future, "archived", return_normal_response),
+        )
+        with (
+                mock.patch("competition.middleware.time_middleware.get_current_stage.__defaults__",
+                           (stages_start_times,)),
+                mock.patch("competition.middleware.time_middleware.COUNTDOWN", (now - timedelta(seconds=3))),
+                mock.patch("competition.middleware.time_middleware.PRE_REGISTRATION", (now - timedelta(seconds=2))),
+                mock.patch("competition.middleware.time_middleware.COMPETITION", (now - timedelta(seconds=1))),
+                mock.patch("competition.middleware.time_middleware.ARCHIVED", far_future),
+        ):
+            yield
+
+
+@pytest.fixture
+def in_countdown(far_future):
+    stages_start_times = (
+        Stage(datetime.now() - timedelta(seconds=3), "countdown", redirect_to_countdown),
+        Stage(far_future, "pre_registration", return_normal_response),
+        Stage(far_future, "competition", return_normal_response),
+        Stage(far_future, "archived", return_normal_response),
+    )
+    with (mock.patch("competition.middleware.time_middleware.get_current_stage.__defaults__", (stages_start_times,)),
+          mock.patch("competition.middleware.time_middleware.PRE_REGISTRATION", far_future)):
+        yield
 
 
 @pytest.fixture

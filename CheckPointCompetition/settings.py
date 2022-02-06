@@ -47,6 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'competition.middleware.time_middleware.stages'
 ]
 
 ROOT_URLCONF = 'CheckPointCompetition.urls'
