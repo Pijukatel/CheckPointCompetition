@@ -12,12 +12,26 @@ class Stage(NamedTuple):
     callback: Callable
 
 
-def redirect_to_countdown(request, normal_response):
+def redirect_to_pre_registration_countdown(request, normal_response):
     messages.add_message(request,
                          messages.INFO,
                          f"Competition will be open for registration: {PRE_REGISTRATION.isoformat()}")
-
     return render(request, "competition/home.html")
+
+
+def redirect_to_competition_countdown(request, normal_response):
+    messages.add_message(request,
+                         messages.INFO,
+                         f"Competition will start: {COMPETITION.isoformat()}")
+    return render(request, "competition/home.html")
+
+
+def allow_pre_registration_views(request, normal_response):
+    allowed_pattern_starts = ("/accounts", "/team")
+    if any(allowed for allowed in allowed_pattern_starts if request.path.startswith(allowed)):
+        return return_normal_response(request, normal_response)
+    else:
+        return redirect_to_competition_countdown(request, normal_response)
 
 
 def return_normal_response(request, normal_response):
@@ -25,8 +39,8 @@ def return_normal_response(request, normal_response):
 
 
 stages_start_times = (
-    Stage(COUNTDOWN, "countdown", redirect_to_countdown),
-    Stage(PRE_REGISTRATION, "pre_registration", return_normal_response),
+    Stage(COUNTDOWN, "countdown", redirect_to_pre_registration_countdown),
+    Stage(PRE_REGISTRATION, "pre_registration", allow_pre_registration_views),
     Stage(COMPETITION, "competition", return_normal_response),
     Stage(ARCHIVED, "archived", return_normal_response),
 )

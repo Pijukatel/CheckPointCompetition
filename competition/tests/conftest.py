@@ -5,7 +5,7 @@ from unittest import mock
 from django.test import Client
 from selenium import webdriver
 from datetime import datetime, timedelta
-from competition.middleware.time_middleware import Stage, redirect_to_countdown, return_normal_response
+from competition.middleware.time_middleware import Stage, redirect_to_pre_registration_countdown, return_normal_response, stages_start_times
 from competition.tests.globals_for_tests import G
 
 '''
@@ -25,38 +25,65 @@ def far_future():
 
 
 @pytest.fixture(autouse=True)
-def in_competition(request, far_future):
+def in_competition(request, far_future, stages_start_times=stages_start_times):
+    now = datetime.now()
+    mocked_countdown_time = now - timedelta(seconds=3)
+    mocked_pre_registration_time = now - timedelta(seconds=2)
+    mocked_competition_time = now - timedelta(seconds=1)
     if 'disable_default_time' in request.keywords:
         yield
     else:
-        now = datetime.now()
         stages_start_times = (
-            Stage(now - timedelta(seconds=3), "countdown", redirect_to_countdown),
-            Stage(now - timedelta(seconds=2), "pre_registration", return_normal_response),
-            Stage(now - timedelta(seconds=1), "competition", return_normal_response),
-            Stage(far_future, "archived", return_normal_response),
+            stages_start_times[0]._replace(start_time=mocked_countdown_time),
+            stages_start_times[1]._replace(start_time=mocked_pre_registration_time),
+            stages_start_times[2]._replace(start_time=mocked_competition_time),
+            stages_start_times[3]._replace(start_time=far_future),
         )
         with (
                 mock.patch("competition.middleware.time_middleware.get_current_stage.__defaults__",
                            (stages_start_times,)),
-                mock.patch("competition.middleware.time_middleware.COUNTDOWN", (now - timedelta(seconds=3))),
-                mock.patch("competition.middleware.time_middleware.PRE_REGISTRATION", (now - timedelta(seconds=2))),
-                mock.patch("competition.middleware.time_middleware.COMPETITION", (now - timedelta(seconds=1))),
+                mock.patch("competition.middleware.time_middleware.COUNTDOWN", mocked_countdown_time),
+                mock.patch("competition.middleware.time_middleware.PRE_REGISTRATION", mocked_pre_registration_time),
+                mock.patch("competition.middleware.time_middleware.COMPETITION", mocked_competition_time),
                 mock.patch("competition.middleware.time_middleware.ARCHIVED", far_future),
         ):
             yield
 
 
 @pytest.fixture
-def in_countdown(far_future):
+def in_countdown(far_future, stages_start_times=stages_start_times):
+    now = datetime.now()
+    mocked_countdown_time = now - timedelta(seconds=3)
     stages_start_times = (
-        Stage(datetime.now() - timedelta(seconds=3), "countdown", redirect_to_countdown),
-        Stage(far_future, "pre_registration", return_normal_response),
-        Stage(far_future, "competition", return_normal_response),
-        Stage(far_future, "archived", return_normal_response),
+        stages_start_times[0]._replace(start_time=mocked_countdown_time),
+        stages_start_times[1]._replace(start_time=far_future),
+        stages_start_times[2]._replace(start_time=far_future),
+        stages_start_times[3]._replace(start_time=far_future),
     )
     with (mock.patch("competition.middleware.time_middleware.get_current_stage.__defaults__", (stages_start_times,)),
-          mock.patch("competition.middleware.time_middleware.PRE_REGISTRATION", far_future)):
+          mock.patch("competition.middleware.time_middleware.COUNTDOWN", mocked_countdown_time),
+          mock.patch("competition.middleware.time_middleware.PRE_REGISTRATION", far_future),
+          mock.patch("competition.middleware.time_middleware.COMPETITION", far_future),
+          mock.patch("competition.middleware.time_middleware.COMPETITION", far_future)):
+        yield
+
+
+@pytest.fixture
+def in_pre_registration(far_future, stages_start_times=stages_start_times):
+    now = datetime.now()
+    mocked_countdown_time = now - timedelta(seconds=3)
+    mocked_pre_registration_time = now - timedelta(seconds=2)
+    stages_start_times = (
+        stages_start_times[0]._replace(start_time=mocked_countdown_time),
+        stages_start_times[1]._replace(start_time=mocked_pre_registration_time),
+        stages_start_times[2]._replace(start_time=far_future),
+        stages_start_times[3]._replace(start_time=far_future),
+    )
+    with (mock.patch("competition.middleware.time_middleware.get_current_stage.__defaults__", (stages_start_times,)),
+          mock.patch("competition.middleware.time_middleware.COUNTDOWN", mocked_countdown_time),
+          mock.patch("competition.middleware.time_middleware.PRE_REGISTRATION", mocked_pre_registration_time),
+          mock.patch("competition.middleware.time_middleware.COMPETITION", far_future),
+          mock.patch("competition.middleware.time_middleware.COMPETITION", far_future)):
         yield
 
 
