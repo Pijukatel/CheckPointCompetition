@@ -2,24 +2,17 @@
 """
 Following procedure is tested which simulates expected use.
 
-Current state:
-
-4 user creation
-2 teams creation
-Upload team photos
-Admin login
-each team confirmation
-
-Desired state:
-
+    With two created checkpoints.
 Competition countdown
-Competition pre-start (open for registration)
+Register not possible.
 
-4 user creation
-2 teams creation
-Upload team photos
-Admin login
-each team confirmation
+Competition pre-start (open for registration)
+    4 user creation
+    2 teams creation
+    Upload team photos
+    Admin login
+    each team confirmation
+Checkpoint view not possible
 
 competition start
 4 user creation
@@ -42,13 +35,16 @@ team3 visits checkpoint (but upload photo is disabled) -> competition end
 
 import pytest
 from PIL import Image
-
-from .globals_for_tests import G
-from ..models import Team, Membership, Point
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from django.contrib.auth.models import User
+from freezegun import freeze_time
+from datetime import timedelta
+
+from .globals_for_tests import G
+from ..models import Team, Membership, Point
+from competition.settings import COUNTDOWN, PRE_REGISTRATION, COMPETITION, ARCHIVED
 
 
 class TestSetup:
@@ -60,6 +56,24 @@ class TestSetup:
     password = G.user1_password
     image_name = "test_image.jpg"
     image = Image.frombytes("L", (3, 2), b'\xbf\x8cd\xba\x7f\xe0\xf0\xb8t\xfe')
+
+
+def create_user_closed(browser):
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, "Create Account")))
+    browser.find_element_by_link_text("Create Account").click()
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.CLASS_NAME, "Message_info")))
+    assert (browser.find_element_by_class_name("Message_info").text
+            == f"Competition will be open for registration: {PRE_REGISTRATION.isoformat()}")
+    browser.find_element_by_id("home")
+
+
+def checkpoints_closed(browser):
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, "Checkpoints")))
+    browser.find_element_by_link_text("Checkpoints").click()
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.CLASS_NAME, "Message_info")))
+    assert (browser.find_element_by_class_name("Message_info").text
+            == f"Competition will start: {COMPETITION.isoformat()}")
+    browser.find_element_by_id("home")
 
 
 def create_user(username, browser):
@@ -153,6 +167,7 @@ def staff_user_confirm_point_photo(browser):
     assert not point.deny_reason
 
 
+@pytest.mark.disable_default_time
 @pytest.mark.functional
 @pytest.mark.usefixtures("load_checkpoint1")
 @pytest.mark.usefixtures("load_checkpoint2")
@@ -161,74 +176,87 @@ def test_system(live_server, browser_factory, tmp_path, load_registered_user_wit
     image_path = tmp_path / TestSetup.image_name
     TestSetup.image.save(image_path)
 
-    # Register first user
-    with browser_factory() as browser:
-        browser.get(G.test_address)
-        create_user(TestSetup.teams["TestTeam1"][0], browser)
-        login(TestSetup.teams["TestTeam1"][0], browser)
-        logged_user_creates_team("TestTeam1", browser)
-
-    # Register second user
-    with browser_factory() as browser:
-        browser.get(G.test_address)
-        create_user(TestSetup.teams["TestTeam1"][1], browser)
-        login(TestSetup.teams["TestTeam1"][1], browser)
-
-    # Register third and fourth user.
-    for username in TestSetup.teams["TestTeam2"]:
+    with freeze_time(COUNTDOWN + timedelta(seconds=1)):
+        # Registration is closed.
         with browser_factory() as browser:
             browser.get(G.test_address)
-            create_user(username, browser)
-            login(username, browser)
+            create_user_closed(browser)
 
-    # User 1 adds user 2 to the team
-    with browser_factory() as browser:
-        browser.get(G.test_address)
-        login(TestSetup.teams["TestTeam1"][0], browser)
-        add_user_to_team("TestTeam1", TestSetup.teams["TestTeam1"][1], browser)
+    with freeze_time(PRE_REGISTRATION + timedelta(seconds=1)):
+        # Checkpoints are closed.
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            checkpoints_closed(browser)
 
-    # Third user creates team and adds fourth user, upload team photo
-    with browser_factory() as browser:
-        browser.get(G.test_address)
-        login(TestSetup.teams["TestTeam2"][0], browser)
-        logged_user_creates_team("TestTeam2", browser)
-        add_user_to_team("TestTeam2", TestSetup.teams["TestTeam2"][1], browser)
-        logged_user_in_team_upload_team_photo("TestTeam2", image_path, browser)
+        # Register first user
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            create_user(TestSetup.teams["TestTeam1"][0], browser)
+            login(TestSetup.teams["TestTeam1"][0], browser)
+            logged_user_creates_team("TestTeam1", browser)
 
-    # User1 uploads team1 photo
-    with browser_factory() as browser:
-        browser.get(G.test_address)
-        login(TestSetup.teams["TestTeam1"][0], browser)
-        logged_user_in_team_upload_team_photo("TestTeam1", image_path, browser)
+        # Register second user
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            create_user(TestSetup.teams["TestTeam1"][1], browser)
+            login(TestSetup.teams["TestTeam1"][1], browser)
 
-    # Both photos are confirmed by staff user
-    with browser_factory() as browser:
-        browser.get(G.test_address)
-        login(G.user_staff_name, browser)
-        staff_user_confirm_team_photo(browser)
-        staff_user_confirm_team_photo(browser)
+        # Register third and fourth user.
+        for username in TestSetup.teams["TestTeam2"]:
+            with browser_factory() as browser:
+                browser.get(G.test_address)
+                create_user(username, browser)
+                login(username, browser)
 
-    # Start competition
-    # Register another other team
+        # User 1 adds user 2 to the team
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(TestSetup.teams["TestTeam1"][0], browser)
+            add_user_to_team("TestTeam1", TestSetup.teams["TestTeam1"][1], browser)
 
-    # TODO: Add time keeping test for leaderboard (check photo upload datetime)
-    # Team 1,2 visit checkpoint 1
-    with browser_factory() as browser:
-        browser.get(G.test_address)
-        team = "TestTeam1"
-        login(TestSetup.teams[team][1], browser)
-        logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
+        # Third user creates team and adds fourth user, upload team photo
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(TestSetup.teams["TestTeam2"][0], browser)
+            logged_user_creates_team("TestTeam2", browser)
+            add_user_to_team("TestTeam2", TestSetup.teams["TestTeam2"][1], browser)
+            logged_user_in_team_upload_team_photo("TestTeam2", image_path, browser)
 
-    with browser_factory() as browser:
-        browser.get(G.test_address)
-        team = "TestTeam2"
-        login(TestSetup.teams[team][1], browser)
-        logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
+        # User1 uploads team1 photo
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(TestSetup.teams["TestTeam1"][0], browser)
+            logged_user_in_team_upload_team_photo("TestTeam1", image_path, browser)
 
-    # Admin confirms visits
-    with browser_factory() as browser:
-        browser.get(G.test_address)
-        login(G.user_staff_name, browser)
-        staff_user_confirm_point_photo(browser)
-        staff_user_confirm_point_photo(browser)
+        # Both photos are confirmed by staff user
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(G.user_staff_name, browser)
+            staff_user_confirm_team_photo(browser)
+            staff_user_confirm_team_photo(browser)
+
+    with freeze_time(COMPETITION + timedelta(seconds=1)):
+        # Start competition
+        # Register another other team
+
+        # TODO: Add time keeping test for leaderboard (check photo upload datetime)
+        # Team 1,2 visit checkpoint 1
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            team = "TestTeam1"
+            login(TestSetup.teams[team][1], browser)
+            logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
+
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            team = "TestTeam2"
+            login(TestSetup.teams[team][1], browser)
+            logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
+
+        # Admin confirms visits
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(G.user_staff_name, browser)
+            staff_user_confirm_point_photo(browser)
+            staff_user_confirm_point_photo(browser)
     # Leader board
