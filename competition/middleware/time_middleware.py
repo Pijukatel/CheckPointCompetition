@@ -1,3 +1,4 @@
+import pytz
 from django.shortcuts import render
 from datetime import datetime
 from typing import NamedTuple, Callable
@@ -48,7 +49,7 @@ stages_start_times = (
 
 def get_current_stage(stages_start_times=stages_start_times):
     valid_stages = [stage for stage in stages_start_times if
-                    stage.start_time < datetime.now()]
+                    stage.start_time < pytz.UTC.localize(datetime.now())]
     return max(valid_stages)
 
 

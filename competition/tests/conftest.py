@@ -2,6 +2,8 @@ import os
 
 import pytest
 from unittest import mock
+
+import pytz
 from django.test import Client
 from selenium import webdriver
 from datetime import datetime, timedelta
@@ -21,12 +23,12 @@ def django_db_setup(django_db_setup, django_db_blocker):
 
 @pytest.fixture(scope="session", autouse=True)
 def far_future():
-    return datetime.now() + timedelta(seconds=1000)
+    return pytz.UTC.localize(datetime.now()) + timedelta(seconds=1000)
 
 
 @pytest.fixture(autouse=True)
 def in_competition(request, far_future, stages_start_times=stages_start_times):
-    now = datetime.now()
+    now = pytz.UTC.localize(datetime.now())
     mocked_countdown_time = now - timedelta(seconds=3)
     mocked_pre_registration_time = now - timedelta(seconds=2)
     mocked_competition_time = now - timedelta(seconds=1)
@@ -52,7 +54,7 @@ def in_competition(request, far_future, stages_start_times=stages_start_times):
 
 @pytest.fixture
 def in_countdown(far_future, stages_start_times=stages_start_times):
-    now = datetime.now()
+    now = pytz.UTC.localize(datetime.now())
     mocked_countdown_time = now - timedelta(seconds=3)
     stages_start_times = (
         stages_start_times[0]._replace(start_time=mocked_countdown_time),
@@ -70,7 +72,7 @@ def in_countdown(far_future, stages_start_times=stages_start_times):
 
 @pytest.fixture
 def in_pre_registration(far_future, stages_start_times=stages_start_times):
-    now = datetime.now()
+    now = pytz.UTC.localize(datetime.now())
     mocked_countdown_time = now - timedelta(seconds=3)
     mocked_pre_registration_time = now - timedelta(seconds=2)
     stages_start_times = (

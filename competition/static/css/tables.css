@@ -25,3 +25,14 @@ div#tableCellMap {
     height: 400px;
     vertical-align: top;
 }
+
+table,
+td {
+    border: 1px solid #3c99DC;
+}
+
+thead,
+tfoot {
+    background-color: #3c99DC;
+    color: #fff;
+}
