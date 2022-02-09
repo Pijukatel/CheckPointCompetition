@@ -15,10 +15,10 @@ from django.contrib.messages.views import SuccessMessageMixin
 
 from competition.forms import AddMembersForm, ConfirmPhoto, PointPhotoForm
 from competition.models import Membership, Team, Point, CheckPoint
+from competition.score_board import TeamWithScore, get_teams_order
 from competition.utils import only_team_member, get_existing_team_if_confirmed, only_non_team_member
 from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
 from competition.views_generic import ConfirmationView
-from competition.templatetags.competition_template_utils import team_of_user
 
 
 def home(request):
@@ -145,6 +145,13 @@ class TeamDetail(DetailView):
         self.extra_context.update({"members": members})
 
         return super().get_context_data(**kwargs)
+
+
+class TeamList(ListView):
+    template_name = "competition/team_list.html"
+
+    def get_queryset(self):
+        return get_teams_order()
 
 
 class UserUpdate(LoginRequiredMixin, SelfForUser, UpdateView):

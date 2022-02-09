@@ -1,9 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-    <ul>List of teams:
-    {% for object in object_list %}
-        <li><a href="{% url "team" object.name %}">{{ object }}</a></li>
-    {% endfor %}
+    <table>
+    <thead>
+        <tr>
+            <th colspan="3">Teams sorted by score</th>
+        </tr>
+      	<tr>
+            <th colspan="1"> Name </th>
+            <th colspan="1"> Confirmed score </th>
+            <th colspan="1"> Latest point update time </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for object in object_list %}
+        <tr>
+            <td> <a href="{% url "team" object.team.name %}"> {{ object.team }} </a></td>
+            <td> {{ object.points }} </td>
+            <td> {{ object.latest_updated_point|date:'H:i:s' }} </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
     </ul>
 {% endblock content %}
 
