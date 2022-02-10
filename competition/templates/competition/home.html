@@ -3,5 +3,39 @@
 
     <div id="home">Some homepage placeholder</div>
 
+    <div id="demo">Position</div>
+
+
+ <script>
+ function error(err) {
+  console.log("Uiii");
+}
+
+target = {
+  latitude : 0,
+  longitude: 0
+};
+
+options = {
+  enableHighAccuracy: false,
+  timeout: 5000,
+  maximumAge: 0
+};
+
+var x = document.getElementById("demo");
+function getLocation() {
+  if (navigator.geolocation) {
+      setInterval(()=>{navigator.geolocation.getCurrentPosition(showPosition, error, options)}, 1000)
+  } else {
+    x.innerHTML = "Geolocation is not supported by this browser.";
+  }
+}
+function showPosition(position) {
+    console.log("Uiiia");
+  x.innerHTML = "Latitude: " + position.coords.latitude +
+  "<br>Longitude: " + position.coords.longitude;
+}
+</script>
+
 {% endblock content %}
 
