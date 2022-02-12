@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% load competition_template_utils %}
+{% block content %}
+
+
+{% include "competition/components/map.html" with objects=checkpoints users=users %}
+
+{% endblock content %}

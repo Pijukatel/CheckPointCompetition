@@ -7,6 +7,31 @@
 <body style="margin:0px">
   <div id="map" style="height:400px"></div>
   <script>
+    const point_style =
+    {
+        cursor : "inherit",
+        fillColor : "#666666",
+        fillOpacity : 0.9,
+        fontColor : "#000000",
+        hoverFillColor : "white",
+        hoverFillOpacity : 0.8,
+        hoverPointRadius : 1,
+        hoverPointUnit : "%",
+        hoverStrokeColor : "red",
+        hoverStrokeOpacity : 1,
+        hoverStrokeWidth : 0.2,
+        labelAlign : "cm",
+        labelOutlineColor : "white",
+        labelOutlineWidth : 3,
+        pointRadius : 6,
+        pointerEvents : "visiblePainted",
+        strokeColor : "#ee9900",
+        strokeDashstyle : "solid",
+        strokeLinecap : "round",
+        strokeOpacity : 0.3,
+        strokeWidth : 1
+    }
+
     map = new OpenLayers.Map("map");
     map.addLayer(new OpenLayers.Layer.OSM());
 
@@ -29,6 +54,15 @@
             new OpenLayers.Geometry.Point( {{ object.gps_lon }}, {{ object.gps_lat }} ).transform(epsg4326, projectTo),
             {description:"This is the value of<br>{{ object.gps_lon }}, {{ object.gps_lat }}"} ,
             {externalGraphic: "/images/marker.PNG", graphicHeight: 25, graphicWidth: 21, graphicXOffset:-12, graphicYOffset:-25  }
+        );
+    vectorLayer.addFeatures(feature);
+    {% endfor %}
+
+    {% for user in users %}
+    var feature = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point( {{ user.gps_lon }}, {{ user.gps_lat }} ).transform(epsg4326, projectTo),
+            {description:"This is the value of<br>{{ user.gps_lon }}, {{ user.gps_lat }}"},
+            ({...point_style,...JSON.parse(&#39;{{ user.style }}&#39;)})
         );
     vectorLayer.addFeatures(feature);
     {% endfor %}

@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -14,7 +16,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.messages.views import SuccessMessageMixin
 
 from competition.forms import AddMembersForm, ConfirmPhoto, PointPhotoForm
-from competition.models import Membership, Team, Point, CheckPoint
+from competition.models import Membership, Team, Point, CheckPoint, UserPosition
 from competition.score_board import TeamWithScore, get_teams_order
 from competition.utils import only_team_member, get_existing_team_if_confirmed, only_non_team_member
 from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
@@ -24,6 +26,19 @@ from competition.views_generic import ConfirmationView
 def home(request):
     """Entry point."""
     return render(request, "competition/home.html")
+
+
+def map_view(request):
+    """Entry point."""
+    # Add style to points
+    override_style = json.dumps({
+        "fillColor": "#009900",
+    })
+    users = UserPosition.objects.all()
+    for user in users:
+        user.style = override_style
+    context = {"checkpoints": list(CheckPoint.objects.all()), "users": users}
+    return render(request, "competition/competition_map.html", context=context)
 
 
 class TeamPhotoConfirmationView(ConfirmationView):

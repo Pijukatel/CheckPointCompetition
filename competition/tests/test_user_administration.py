@@ -4,7 +4,7 @@ from .globals_for_tests import G
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
-from ..models import Membership
+from ..models import Membership, UserPosition
 from ..views import RegisterUser
 
 
@@ -87,6 +87,10 @@ def test_register_user_creates_membership(client):
     register_test_user(client)
     assert Membership.objects.filter(user__username=G.user1_name).exists()
 
+@pytest.mark.django_db
+def test_register_user_creates_position(client):
+    register_test_user(client)
+    assert UserPosition.objects.filter(user__username=G.user1_name).exists()
 
 @pytest.mark.django_db
 def test_register_duplicated_user_denied(client):
