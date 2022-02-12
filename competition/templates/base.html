@@ -16,7 +16,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/messages.css' %}">
 
 </head>
-<body>
+<body onload="getLocation()">
     <main>
         <header>
             {% block header %}
@@ -70,6 +70,8 @@
         <footer>
             {% block footer %}
             {% endblock footer %}
+
+        <script src="{% static 'js/position.js' %}"></script>
         </footer>
     </main>
 </body>

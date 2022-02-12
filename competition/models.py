@@ -68,6 +68,14 @@ class Membership(models.Model):
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
 
 
+class UserPosition(models.Model):
+    """Intermediate model to add position to each user."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    gps_lat = models.FloatField()
+    gps_lon = models.FloatField()
+    time = models.DateTimeField(auto_now=True)
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     """Using signals to create membership when user is created."""
