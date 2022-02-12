@@ -71,8 +71,8 @@ class Membership(models.Model):
 class UserPosition(models.Model):
     """Intermediate model to add position to each user."""
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    gps_lat = models.FloatField()
-    gps_lon = models.FloatField()
+    gps_lat = models.FloatField(default=0)
+    gps_lon = models.FloatField(default=0)
     time = models.DateTimeField(auto_now=True)
 
 
@@ -81,6 +81,7 @@ def create_user_profile(sender, instance, created, **kwargs):
     """Using signals to create membership when user is created."""
     if created:
         Membership.objects.create(user=instance)
+        UserPosition.objects.create(user=instance)
 
 
 @receiver(post_save, sender=User)
