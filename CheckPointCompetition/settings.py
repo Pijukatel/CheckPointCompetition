@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'competition',
     'django_cleanup.apps.CleanupConfig',  # For auto deleting images/files from disk when updating them on models.
+
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

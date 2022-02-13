@@ -1,6 +1,6 @@
 import pytest
 
-from ..models import Team, User, Membership, CheckPoint, Point
+from ..models import Team, User, Membership, CheckPoint, Point, UserPosition
 from .globals_for_tests import G
 from django.contrib.auth.hashers import make_password
 
@@ -27,6 +27,15 @@ def load_registered_user3():
     user.save()
     yield user
     user.delete()
+
+
+@pytest.fixture
+def load_registered_user1_custom_position(load_registered_user1):
+    user_position = UserPosition.objects.get(user=load_registered_user1)
+    user_position.gps_lat = G.user1_lats[0]
+    user_position.gps_lon = G.user1_lons[0]
+    user_position.save()
+    yield user_position
 
 
 @pytest.fixture
