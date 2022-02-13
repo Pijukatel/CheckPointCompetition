@@ -90,7 +90,7 @@ def in_pre_registration(far_future, stages_start_times=stages_start_times):
 
 
 @pytest.fixture
-def client_with_logged_user1():
+def client_with_logged_user1(load_registered_user1):
     """Return client with logged in user1."""
     client = Client()
     client.login(username=G.user1_name, password=G.user1_password)
@@ -98,7 +98,7 @@ def client_with_logged_user1():
 
 
 @pytest.fixture
-def client_with_logged_user2():
+def client_with_logged_user2(load_registered_user2):
     """Return client with logged in user2."""
     client = Client()
     client.login(username=G.user2_name, password=G.user2_password)
