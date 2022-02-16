@@ -4,6 +4,7 @@ import pytest
 from django.contrib.auth.models import User
 from pytest_django.asserts import assertTemplateUsed
 from .globals_for_tests import G
+from ..models import UserPosition
 
 
 def set_of_items_from_list_of_dicts(in_list: List[Dict[Any, Any]]) -> Set[Tuple[Any, ...]]:
@@ -51,3 +52,30 @@ def test_memberships(client_with_logged_user1):
     expected_data = [{'user': User.objects.get(username=G.user1_name).id, 'team': G.team1_name},
                      {'user': User.objects.get(username=G.user2_name).id, 'team': G.team2_name}]
     assert set_of_items_from_list_of_dicts(response.json()) == set_of_items_from_list_of_dicts(expected_data)
+
+
+@pytest.mark.parametrize("input_data", (
+        {"gps_lat": G.user1_lats[1], "gps_lon": G.user1_lons[1]},
+        {"gps_lat": G.user1_lats[1], "gps_lon": G.user1_lons[1], "user": 2},
+        {"gps_lat": G.user1_lats[1], "gps_lon": G.user1_lons[1], "whatever": "a"}
+))
+@pytest.mark.usefixtures("load_registered_user2")
+@pytest.mark.usefixtures("load_registered_user1_custom_position")
+@pytest.mark.django_db
+def test_user_positions_update(client_with_logged_user1, input_data):
+    client_with_logged_user1.patch("/api/user_positions/", data=input_data, content_type="application/json")
+    expected_positions = [
+        {'gps_lat': G.user1_lats[1], 'gps_lon': G.user1_lons[1], 'user': User.objects.get(username=G.user1_name)},
+        {'gps_lat': 0.0, 'gps_lon': 0.0, 'user': User.objects.get(username=G.user2_name)}]
+    assert set(UserPosition.objects.all()) == {
+        UserPosition(**expected_position) for expected_position in expected_positions}
+
+
+@pytest.mark.usefixtures("load_registered_user2")
+@pytest.mark.usefixtures("load_registered_user1_custom_position")
+@pytest.mark.django_db
+def test_user_positions_update_anonymoous(client):
+    input_data = {"gps_lat": G.user1_lats[1], "gps_lon": G.user1_lons[1]}
+    response = client.patch("/api/user_positions/", data=input_data, content_type="application/json", follow=True)
+    assert response.headers["content-type"] != "application/json"
+    assertTemplateUsed(response, "/".join([G.APP_NAME, "login.html"]))

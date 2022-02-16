@@ -75,6 +75,16 @@ class UserPosition(models.Model):
     gps_lon = models.FloatField(default=0)
     time = models.DateTimeField(auto_now=True)
 
+    def __eq__(self, other):
+        if (isinstance(other, self.__class__)
+                and self.user == other.user
+                and self.gps_lat == other.gps_lat
+                and self.gps_lon == other.gps_lon):
+            return True
+
+    def __hash__(self):
+        return hash((self.user_id, self.gps_lat, self.gps_lon))
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
