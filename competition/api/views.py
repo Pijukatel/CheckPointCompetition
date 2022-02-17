@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from competition.api.serializers import UserPositionSerializer, CheckpointPositionSerializer, MembershipSerializer
 from competition.models import UserPosition, CheckPoint, Membership
+
 
 
 @login_required
