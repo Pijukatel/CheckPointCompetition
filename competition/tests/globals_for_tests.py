@@ -12,8 +12,8 @@ class Globals(NamedTuple):
     APP_NAME = "competition"
     user1_name = "TestName1"
     user1_password = "TestPassword1234"
-    user1_lats = [57.68694]
-    user1_lons = [12.0129]
+    user1_lats = [57.68694, 6.0]
+    user1_lons = [12.0129, 7.0]
     user2_name = "TestName2"
     user2_password = user1_password
     user2_lats = [0]

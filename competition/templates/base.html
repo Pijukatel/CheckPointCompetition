@@ -16,7 +16,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/messages.css' %}">
 
 </head>
-<body onload="getLocation()">
+<body onload="userPositionWorkflow()">
     <main>
         <header>
             {% block header %}
@@ -35,7 +35,7 @@
                     <ul>
                         {%  if user.is_authenticated %}
                             {% team_of_user user as team %}
-                                <li> User: <a  href="{% url 'user' %}"> {{ request.user }}</a></li>
+                                <li> User: <a id="logged_user_link" href="{% url 'user' %}"> {{ request.user }}</a></li>
                                 <li> <a  href="{% url 'logout' %}">Logout</a></li>
                                 {% if team %}
                                     <li> Team: <a  href="{% url 'team' team%}"> {{ team }} </a></li>
@@ -71,7 +71,7 @@
         <footer>
             {% block footer %}
             {% endblock footer %}
-
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
         <script src="{% static 'js/position.js' %}"></script>
         </footer>
     </main>
