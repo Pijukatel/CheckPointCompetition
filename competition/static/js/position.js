@@ -1,7 +1,6 @@
 const Cookies = window.Cookies;
-function positionError(err) {
-  console.log(err);
-}
+
+const x = document.getElementById("positionViewer");
 
 options = {
   enableHighAccuracy: true,
@@ -9,25 +8,32 @@ options = {
   maximumAge: 0
 };
 
-const x = document.getElementById("positionViewer");
+function userPositionWorkflow() {
+  requestCheckpoints()
+  requestMemberships()
+  if (!isUserLogged()) {return}
+  setInterval(()=> {
+    getUserPositions()
+    updateUsersPosition()
+  }, 5000)
 
-function getLocation() {
+}
+
+function isUserLogged() {
+  return Boolean(document.getElementById('logged_user_link'));
+}
+
+function positionError(err) {
+  console.log(err);
+}
+
+function updateUsersPosition() {
   if (navigator.geolocation) {
-      setInterval(()=>{navigator.geolocation.getCurrentPosition(positionUpdate, positionError, options)}, 10000)
-  } else {
+      navigator.geolocation.getCurrentPosition(patchUserPosition, positionError, options);
+  }
+  else {
     x.innerHTML = "Geolocation is not supported by this browser.";
   }
-}
-
-function positionUpdate(position) {
-  showPosition(position)
-  patchUserPosition(position)
-}
-
-
-function showPosition(position) {
-  x.innerHTML = "Latitude: " + position.coords.latitude +
-  "<br>Longitude: " + position.coords.longitude;
 }
 
 function patchUserPosition(position) {
@@ -41,6 +47,32 @@ function patchUserPosition(position) {
   req.send(JSON.stringify(positions));
 }
 
+function getUserPositions() {
+  const req = new XMLHttpRequest();
+  req.addEventListener('load', function() {
+    console.log(this.responseText);
+});
+  req.open('GET', 'http://127.0.0.1:8000/api/user_positions/', true);
+  req.setRequestHeader("Accept", "application/json");
+  req.send();
+}
 
+function requestCheckpoints() {
+  const req = new XMLHttpRequest();
+  req.addEventListener('load', function() {
+    console.log(this.responseText)
+  });
+  req.open('GET', 'http://127.0.0.1:8000/api/checkpoint_positions/', true);
+  req.setRequestHeader("Accept", "application/json");
+  req.send();
+}
 
-
+function requestMemberships() {
+  const req = new XMLHttpRequest();
+  req.addEventListener('load', function() {
+    console.log(this.responseText)
+  });
+  req.open('GET', 'http://127.0.0.1:8000/api/memberships/', true);
+  req.setRequestHeader("Accept", "application/json");
+  req.send();
+}
