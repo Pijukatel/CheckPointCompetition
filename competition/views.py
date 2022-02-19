@@ -21,11 +21,17 @@ from competition.score_board import TeamWithScore, get_teams_order
 from competition.utils import only_team_member, get_existing_team_if_confirmed, only_non_team_member
 from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
 from competition.views_generic import ConfirmationView
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 
 def home(request):
     """Entry point."""
     return render(request, "competition/home.html")
+
+
+@xframe_options_sameorigin
+def base_map_view(request):
+    return render(request, "competition/components/map_base.html")
 
 
 def map_view(request):
