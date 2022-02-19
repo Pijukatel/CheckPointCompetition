@@ -8,15 +8,10 @@ from competition.api.serializers import UserPositionSerializer, CheckpointPositi
 from competition.models import UserPosition, CheckPoint, Membership
 
 
-
 @login_required
-@api_view(["GET", "PATCH"])
-def user_positions(request):
-    if request.method == "GET":
-        serializer = UserPositionSerializer(UserPosition.objects.all(), many=True)
-        return Response(serializer.data)
-
-    elif request.method == "PATCH":
+@api_view(["PATCH"])
+def current_user(request):
+    if request.method == "PATCH":
         current_position = UserPosition.objects.get(user=request.user)
         serializer = UserPositionSerializer(instance=current_position, data=request.data)
         if serializer.is_valid():
@@ -25,14 +20,20 @@ def user_positions(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@login_required
+@api_view(["GET"])
+def user_positions(request):
+    serializer = UserPositionSerializer(UserPosition.objects.all(), many=True)
+    return Response(serializer.data)
+
+
+
 @api_view(["GET"])
 def checkpoint_positions(request):
     serializer = CheckpointPositionSerializer(CheckPoint.objects.all(), many=True)
     return Response(serializer.data)
 
 
-@login_required
+
 @api_view(["GET"])
 def memberships(request):
     serializer = MembershipSerializer(Membership.objects.all(), many=True)

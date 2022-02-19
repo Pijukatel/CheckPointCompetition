@@ -1,4 +1,4 @@
-const OpenLayers = window.ol
+const OpenLayers = window.OpenLayers
 const pointStyle =
 {
     cursor : "inherit",
