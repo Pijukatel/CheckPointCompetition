@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+{% load static %}
+<head>
+  <title>Point map</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/2.11/lib/OpenLayers.js"></script>
+</head>
+<body style="margin:0px">
+  <div id="map" style="height:400px"></div>
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/map.js' %}"></script>
+  <script>
+    fullMap()
+  </script>
+
+</body>

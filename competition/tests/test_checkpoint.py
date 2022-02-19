@@ -87,9 +87,7 @@ def test_checkpoints_list_view_contains_correct_names(client):
 @pytest.mark.django_db
 def test_checkpoints_list_view_contains_map(client):
     response = client.get("/checkpoints/", follow=True)
-    assert bytes(
-        f"""<iframe height="400px" width="100%" scrolling="no" srcdoc='\n<!DOCTYPE HTML>\n<head>\n  <title>Point map</title>""",
-        encoding=response.charset) in response.content
+    assertTemplateUsed(response, "/".join([G.APP_NAME, "components/map.html"]))
 
 
 @pytest.mark.usefixtures("load_checkpoint1")

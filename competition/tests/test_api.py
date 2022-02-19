@@ -12,7 +12,7 @@ def set_of_items_from_list_of_dicts(in_list: List[Dict[Any, Any]]) -> Set[Tuple[
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("endpoint", ("user_positions", "checkpoint_positions", "memberships"))
+@pytest.mark.parametrize("endpoint", ("current_user",))
 def test_api_endpoints_not_public(client, endpoint):
     """Only logged users can access API endpoints."""
     response = client.get(f"/api/{endpoint}/", follow=True)
@@ -63,7 +63,7 @@ def test_memberships(client_with_logged_user1):
 @pytest.mark.usefixtures("load_registered_user1_custom_position")
 @pytest.mark.django_db
 def test_user_positions_update(client_with_logged_user1, input_data):
-    client_with_logged_user1.patch("/api/user_positions/", data=input_data, content_type="application/json")
+    client_with_logged_user1.patch("/api/current_user/", data=input_data, content_type="application/json")
     expected_positions = [
         {'gps_lat': G.user1_lats[1], 'gps_lon': G.user1_lons[1], 'user': User.objects.get(username=G.user1_name)},
         {'gps_lat': 0.0, 'gps_lon': 0.0, 'user': User.objects.get(username=G.user2_name)}]
@@ -76,6 +76,6 @@ def test_user_positions_update(client_with_logged_user1, input_data):
 @pytest.mark.django_db
 def test_user_positions_update_anonymoous(client):
     input_data = {"gps_lat": G.user1_lats[1], "gps_lon": G.user1_lons[1]}
-    response = client.patch("/api/user_positions/", data=input_data, content_type="application/json", follow=True)
+    response = client.patch("/api/current_user/", data=input_data, content_type="application/json", follow=True)
     assert response.headers["content-type"] != "application/json"
     assertTemplateUsed(response, "/".join([G.APP_NAME, "login.html"]))

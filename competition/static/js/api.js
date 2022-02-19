@@ -1,5 +1,5 @@
 const Cookies = window.Cookies;
-
+const base_url = window.location.origin
 const x = document.getElementById("positionViewer");
 
 options = {
@@ -9,7 +9,6 @@ options = {
 };
 
 function userPositionWorkflow() {
-  requestCheckpoints()
   requestMemberships()
   if (!isUserLogged()) {return}
   setInterval(()=> {
@@ -39,7 +38,7 @@ function updateUsersPosition() {
 function patchUserPosition(position) {
   const csrftoken = Cookies.get('csrftoken');
   const req = new XMLHttpRequest();
-  req.open('PATCH', 'http://127.0.0.1:8000/api/user_positions/', true);
+  req.open('PATCH', `${base_url}/api/current_user/`, true);
   req.setRequestHeader("Accept", "application/json");
   req.setRequestHeader("Content-Type", "application/json");
   req.setRequestHeader("X-CSRFToken", csrftoken);
@@ -52,17 +51,15 @@ function getUserPositions() {
   req.addEventListener('load', function() {
     console.log(this.responseText);
 });
-  req.open('GET', 'http://127.0.0.1:8000/api/user_positions/', true);
+  req.open('GET', `${base_url}/api/user_positions/`, true);
   req.setRequestHeader("Accept", "application/json");
   req.send();
 }
 
-function requestCheckpoints() {
+function requestCheckpoints(callback) {
   const req = new XMLHttpRequest();
-  req.addEventListener('load', function() {
-    console.log(this.responseText)
-  });
-  req.open('GET', 'http://127.0.0.1:8000/api/checkpoint_positions/', true);
+  req.addEventListener('load', function() {callback(this.responseText);});
+  req.open('GET', `${base_url}/api/checkpoint_positions/`, true);
   req.setRequestHeader("Accept", "application/json");
   req.send();
 }
@@ -72,7 +69,7 @@ function requestMemberships() {
   req.addEventListener('load', function() {
     console.log(this.responseText)
   });
-  req.open('GET', 'http://127.0.0.1:8000/api/memberships/', true);
+  req.open('GET', `${base_url}/api/memberships/`, true);
   req.setRequestHeader("Accept", "application/json");
   req.send();
 }
