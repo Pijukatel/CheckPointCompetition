@@ -12,7 +12,7 @@ function userPositionWorkflow() {
   requestMemberships()
   if (!isUserLogged()) {return}
   setInterval(()=> {
-    getUserPositions()
+    requestUsers()
     updateUsersPosition()
   }, 5000)
 
@@ -46,11 +46,9 @@ function patchUserPosition(position) {
   req.send(JSON.stringify(positions));
 }
 
-function getUserPositions() {
+function requestUsers(callback) {
   const req = new XMLHttpRequest();
-  req.addEventListener('load', function() {
-    console.log(this.responseText);
-});
+  req.addEventListener('load', function() {callback(this.responseText);});
   req.open('GET', `${base_url}/api/user_positions/`, true);
   req.setRequestHeader("Accept", "application/json");
   req.send();
