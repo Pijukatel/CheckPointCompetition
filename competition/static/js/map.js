@@ -1,5 +1,6 @@
 const ol = window.ol
 
+const element = document.getElementById('popup');
 
 const styles = {
   'Checkpoint': new ol.style.Style({
@@ -40,6 +41,43 @@ function createBaseLayerMap() {
 
     map.addLayer(userLayer);
     map.addLayer(checkpointLayer);
+
+    const popup = new ol.Overlay({
+        element: element,
+        positioning: 'bottom-center',
+        stopEvent: false,
+    });
+    map.addOverlay(popup);
+
+    // display popup on click
+    map.on('click', function (evt) {
+      const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+        return feature;
+      });
+      if (feature) {
+        popup.setPosition(evt.coordinate);
+        $(element).popover({
+          placement: 'top',
+          html: true,
+          content: feature.get('name'),
+        });
+        $(element).popover('show');
+      } else {
+        $(element).popover('dispose');
+      }
+    });
+
+    // change mouse cursor when over marker
+    map.on('pointermove', function (e) {
+      const pixel = map.getEventPixel(e.originalEvent);
+      const hit = map.hasFeatureAtPixel(pixel);
+      document.getElementById('map').style.cursor = hit ? 'pointer' : '';
+    });
+    // Close the popup when the map is moved
+    map.on('movestart', function () {
+      $(element).popover('dispose');
+    });
+
 
 
     return {"checkpointSource": checkpointSource, "userSource": userSource}
@@ -86,5 +124,10 @@ function addCheckpoints(mapSource) {
 function addUsers(mapSource) {
     addMarker(mapSource, styles['User'], requestUsers)
 }
+
+
+
+
+
 
 

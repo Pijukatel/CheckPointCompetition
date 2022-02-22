@@ -9,10 +9,8 @@ options = {
 };
 
 function userPositionWorkflow() {
-  requestMemberships()
   if (!isUserLogged()) {return}
   setInterval(()=> {
-    requestUsers()
     updateUsersPosition()
   }, 5000)
 
