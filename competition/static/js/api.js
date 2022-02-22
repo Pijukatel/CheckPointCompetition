@@ -9,10 +9,8 @@ options = {
 };
 
 function userPositionWorkflow() {
-  requestMemberships()
   if (!isUserLogged()) {return}
   setInterval(()=> {
-    requestUsers()
     updateUsersPosition()
   }, 5000)
 
@@ -46,28 +44,17 @@ function patchUserPosition(position) {
   req.send(JSON.stringify(positions));
 }
 
-function requestUsers(callback) {
-  const req = new XMLHttpRequest();
-  req.addEventListener('load', function() {callback(this.responseText);});
-  req.open('GET', `${base_url}/api/user_positions/`, true);
-  req.setRequestHeader("Accept", "application/json");
-  req.send();
+function requestUsers() {
+  const jsonData = fetch(`${base_url}/api/user_positions/`).then((response) => { return response.json()});
+  return jsonData;
 }
 
 function requestCheckpoints(callback) {
-  const req = new XMLHttpRequest();
-  req.addEventListener('load', function() {callback(this.responseText);});
-  req.open('GET', `${base_url}/api/checkpoint_positions/`, true);
-  req.setRequestHeader("Accept", "application/json");
-  req.send();
+  const jsonData = fetch(`${base_url}/api/checkpoint_positions/`).then((response) => { return response.json()});
+  return jsonData;
 }
 
 function requestMemberships() {
-  const req = new XMLHttpRequest();
-  req.addEventListener('load', function() {
-    console.log(this.responseText)
-  });
-  req.open('GET', `${base_url}/api/memberships/`, true);
-  req.setRequestHeader("Accept", "application/json");
-  req.send();
+  const jsonData = fetch(`${base_url}/api/memberships/`).then((response) => { return response.json()});
+  return jsonData;
 }
