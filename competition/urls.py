@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.urls import path
 from django.views.generic import ListView
 
-from .api.views import user_positions, checkpoint_positions, memberships, current_user
+from .api.views import user_positions, checkpoint_positions, memberships, current_user_pos, teams, points, user
 from .models import CheckPoint, Team, Point
 from .views import (home, RegisterUser, login_page, logout_link, UserDetail, UserUpdate, UserDelete, TeamDetail,
                     TeamCreate, leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
@@ -37,8 +37,11 @@ urlpatterns = [
     path("teams/", TeamList.as_view(), name="teams"),
     path("map/", map_view, name="map"),
     path("map_base/", base_map_view, name='map_base'),
-    path("api/user_positions/", user_positions, name="user_positions"),
-    path("api/current_user/", current_user, name="current_user"),
-    path("api/checkpoint_positions/", checkpoint_positions, name="checkpoint_positions"),
-    path("api/memberships/", memberships, name="memberships")
+    path("api/user_positions/", user_positions, name="api_user_positions"),
+    path("api/current_user_pos/", current_user_pos, name="api_current_user_pos"),
+    path("api/checkpoint_positions/", checkpoint_positions, name="api_checkpoint_positions"),
+    path("api/memberships/", memberships, name="api_memberships"),
+    path("api/teams/", teams, name="api_teams"),
+    path("api/points/", points, name="api_points"),
+    path("api/user/", user, name="api_user"),
 ]

@@ -12,12 +12,46 @@ def set_of_items_from_list_of_dicts(in_list: List[Dict[Any, Any]]) -> Set[Tuple[
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("endpoint", ("current_user",))
+@pytest.mark.parametrize("endpoint", ("current_user_pos",))
 def test_api_endpoints_not_public(client, endpoint):
     """Only logged users can access API endpoints."""
     response = client.get(f"/api/{endpoint}/", follow=True)
     assert response.headers["content-type"] != "application/json"
     assertTemplateUsed(response, "/".join([G.APP_NAME, "login.html"]))
+
+
+@pytest.mark.django_db
+def test_points(client_with_logged_user1,
+                load_registered_user1_with_team1,
+                load_registered_user2_with_team2,
+                load_checkpoint1,
+                load_checkpoint2):
+    _, team1, _ = load_registered_user1_with_team1
+    _, team2, _ = load_registered_user2_with_team2
+    team1.confirmed = True
+    team1.save()
+    team2.confirmed = True
+    team2.save()
+
+    response = client_with_logged_user1.get("/api/points/", follow=True)
+    assert response.headers["content-type"] == "application/json"
+    expected_data = [
+        {"confirmed": False, "checkpoint_id": load_checkpoint1.name, "team_id": team1.name},
+        {"confirmed": False, "checkpoint_id": load_checkpoint2.name, "team_id": team1.name},
+        {"confirmed": False, "checkpoint_id": load_checkpoint1.name, "team_id": team2.name},
+        {"confirmed": False, "checkpoint_id": load_checkpoint2.name, "team_id": team2.name}
+    ]
+    assert set_of_items_from_list_of_dicts(response.json()) == set_of_items_from_list_of_dicts(expected_data)
+
+
+@pytest.mark.usefixtures("load_registered_user2_with_team2")
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+def test_teams(client_with_logged_user1):
+    response = client_with_logged_user1.get("/api/teams/", follow=True)
+    assert response.headers["content-type"] == "application/json"
+    expected_data = [{'name': G.team1_name, 'confirmed': False}, {'name': G.team2_name, 'confirmed': False}]
+    assert set_of_items_from_list_of_dicts(response.json()) == set_of_items_from_list_of_dicts(expected_data)
 
 
 @pytest.mark.usefixtures("load_registered_user2")
@@ -63,7 +97,7 @@ def test_memberships(client_with_logged_user1):
 @pytest.mark.usefixtures("load_registered_user1_custom_position")
 @pytest.mark.django_db
 def test_user_positions_update(client_with_logged_user1, input_data):
-    client_with_logged_user1.patch("/api/current_user/", data=input_data, content_type="application/json")
+    client_with_logged_user1.patch("/api/current_user_pos/", data=input_data, content_type="application/json")
     expected_positions = [
         {'gps_lat': G.user1_lats[1], 'gps_lon': G.user1_lons[1], 'user': User.objects.get(username=G.user1_name)},
         {'gps_lat': 0.0, 'gps_lon': 0.0, 'user': User.objects.get(username=G.user2_name)}]
@@ -76,6 +110,15 @@ def test_user_positions_update(client_with_logged_user1, input_data):
 @pytest.mark.django_db
 def test_user_positions_update_anonymoous(client):
     input_data = {"gps_lat": G.user1_lats[1], "gps_lon": G.user1_lons[1]}
-    response = client.patch("/api/current_user/", data=input_data, content_type="application/json", follow=True)
+    response = client.patch("/api/current_user_pos/", data=input_data, content_type="application/json", follow=True)
     assert response.headers["content-type"] != "application/json"
     assertTemplateUsed(response, "/".join([G.APP_NAME, "login.html"]))
+
+
+@pytest.mark.usefixtures("load_registered_user2")
+@pytest.mark.usefixtures("load_registered_user1")
+@pytest.mark.django_db
+def test_user(client_with_logged_user1):
+    response = client_with_logged_user1.get("/api/user/", follow=True)
+    assert response.headers["content-type"] == "application/json"
+    assert response.json() == {'id': User.objects.get(username=G.user1_name).id, 'username': G.user1_name}

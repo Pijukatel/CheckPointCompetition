@@ -36,7 +36,7 @@ function updateUsersPosition() {
 function patchUserPosition(position) {
   const csrftoken = Cookies.get('csrftoken');
   const req = new XMLHttpRequest();
-  req.open('PATCH', `${base_url}/api/current_user/`, true);
+  req.open('PATCH', `${base_url}/api/current_user_pos/`, true);
   req.setRequestHeader("Accept", "application/json");
   req.setRequestHeader("Content-Type", "application/json");
   req.setRequestHeader("X-CSRFToken", csrftoken);
@@ -44,17 +44,32 @@ function patchUserPosition(position) {
   req.send(JSON.stringify(positions));
 }
 
-function requestUsers() {
-  const jsonData = fetch(`${base_url}/api/user_positions/`).then((response) => { return response.json()});
+function requestEndoint(endpoint) {
+  const jsonData = fetch(`${base_url}${endpoint}`).then((response) => { return response.json()});
   return jsonData;
+}
+
+function requestUsers() {
+  return requestEndoint("/api/user_positions/");
 }
 
 function requestCheckpoints(callback) {
-  const jsonData = fetch(`${base_url}/api/checkpoint_positions/`).then((response) => { return response.json()});
-  return jsonData;
+  return requestEndoint("/api/checkpoint_positions/");
 }
 
 function requestMemberships() {
-  const jsonData = fetch(`${base_url}/api/memberships/`).then((response) => { return response.json()});
-  return jsonData;
+  return requestEndoint("/api/memberships/");
 }
+
+function requestTeams() {
+  return requestEndoint("/api/teams/");
+}
+
+function requestPoints() {
+  return requestEndoint("/api/points/");
+}
+
+function requestUser() {
+  return requestEndoint("/api/user/");
+}
+
