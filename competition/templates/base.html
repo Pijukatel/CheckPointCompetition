@@ -35,10 +35,10 @@
                     <ul>
                         {%  if user.is_authenticated %}
                             {% team_of_user user as team %}
-                                <li> User: <a id="logged_user_link" href="{% url 'user' %}"> {{ request.user }}</a></li>
+                                <li> User: <a id="logged_user_link" href="{% url 'user' %}">{{ request.user }}</a></li>
                                 <li> <a  href="{% url 'logout' %}">Logout</a></li>
                                 {% if team %}
-                                    <li> Team: <a  href="{% url 'team' team%}"> {{ team }} </a></li>
+                                    <li> Team: <a id="team_link"  href="{% url 'team' team%}">{{ team }}</a></li>
                                 {% else %}
                                     <li> Team: <a  href="{% url 'team_create'%}"> Create new team </a></li>
                                 {% endif %}

@@ -9,12 +9,21 @@ const userColors = Array.from({ length: 100 }, () => {
 let teamStyleMapping = {}
 
 const styles = {
-  'Checkpoint': new ol.style.Style({
+  'CheckpointNotVisited': new ol.style.Style({
     image: new ol.style.RegularShape({
       points: 3,
       radius: 10,
       angle: 0,
       fill: new ol.style.Fill({color: '#d71616'}),
+      stroke: new ol.style.Stroke({color: '#000000', width: 1}),
+    }),
+  }),
+  'CheckpointVisited': new ol.style.Style({
+    image: new ol.style.RegularShape({
+      points: 3,
+      radius: 10,
+      angle: 0,
+      fill: new ol.style.Fill({color: '#349b07'}),
       stroke: new ol.style.Stroke({color: '#000000', width: 1}),
     }),
   }),
@@ -68,7 +77,7 @@ function createBaseLayerMap() {
           popup.setPosition(evt.coordinate);
           $(element).popover({
               placement: 'top',
-              html: false,
+              html: true,
               content: feature.get('name'),
           });
           $(element).popover('show');
@@ -92,10 +101,11 @@ function createBaseLayerMap() {
 }
 
 
-function fullMap() {
+async function fullMap() {
     const sources = createBaseLayerMap()
+    const [user, membership] = await Promise.all([requestUser(),requestMemberships()]);
     // Add all checkpoints to map once.
-    addCheckpoints(sources.checkpointSource)
+    addCheckpoints(sources.checkpointSource, membership)
 
     // Periodically update user positions in map.
     setInterval(()=>{
@@ -118,9 +128,22 @@ async function addMarker(mapSource, point, markerStyle, markerText){
         mapSource.addFeature(iconFeature);
 }
 
-async function addCheckpoints(mapSource) {
-    let checkpoints = await requestCheckpoints();
-    checkpoints.forEach( (point)=> {addMarker(mapSource, point, styles['Checkpoint'], `GPS: lon= ${point.gps_lon}, lat= ${point.gps_lon}`)})
+async function addCheckpoints(mapSource, memberships) {
+    let [checkpoints, points, user] = await Promise.all([requestCheckpoints(),requestPoints(), requestUser()]);
+    let team_name = null
+    if (user.username) {team_name = memberships.find( memebership => memebership.user == user.id).team;}
+
+    checkpoints.forEach((checkpoint) => {
+        let style=styles['CheckpointNotVisited']
+        let visited=false
+        if (team_name && points.find(point  => (point.checkpoint_id ==checkpoint.name && point.team_id==team_name)).confirmed) {
+            style=styles['CheckpointVisited']
+            visited=true
+        }
+        addMarker(mapSource, checkpoint, style,
+            `Name: ${checkpoint.name}<br> GPS: lon= ${checkpoint.gps_lon}, lat= ${checkpoint.gps_lon}, visited= ${visited}`)
+    })
+
 
 }
 
