@@ -14,7 +14,7 @@
     <tbody>
         {% for object in object_list %}
         <tr>
-            <td> <a href="{% url "team" object.team.name %}"> {{ object.team }} </a></td>
+            <td> <a href="{% url "team" object.team %}"> {{ object.team }} </a></td>
             <td> {{ object.points }} </td>
             <td> {{ object.latest_updated_point|date:'H:i:s' }} </td>
         </tr>

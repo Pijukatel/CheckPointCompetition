@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from competition.api.serializers import UserPositionSerializer, CheckpointPositionSerializer, MembershipSerializer, \
-    PointSerializer, TeamSerializer, UserSerializer
+    PointSerializer, TeamSerializer, UserSerializer, ScoreSerializer
 from competition.models import UserPosition, CheckPoint, Membership, Point, Team
+from competition.score_board import get_teams_order
 
 
 @login_required
@@ -54,4 +55,9 @@ def teams(request):
 @api_view(["GET"])
 def user(request):
     serializer = UserSerializer(request.user)
+    return Response(serializer.data)
+
+@api_view(["GET"])
+def score(request):
+    serializer = ScoreSerializer(get_teams_order())
     return Response(serializer.data)

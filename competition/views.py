@@ -33,20 +33,6 @@ def home(request):
 def base_map_view(request):
     return render(request, "competition/components/map_base.html")
 
-
-def map_view(request):
-    """Entry point."""
-    # Add style to points
-    override_style = json.dumps({
-        "fillColor": "#009900",
-    })
-    users = UserPosition.objects.all()
-    for user in users:
-        user.style = override_style
-    context = {"checkpoints": list(CheckPoint.objects.all()), "users": users}
-    return render(request, "competition/competition_map.html", context=context)
-
-
 class TeamPhotoConfirmationView(ConfirmationView):
     model = Team
     template_name = "competition/team_photo_confirmation.html"
