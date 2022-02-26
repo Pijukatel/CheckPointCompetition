@@ -73,3 +73,6 @@ function requestUser() {
   return requestEndoint("/api/user/");
 }
 
+function requestScore() {
+  return requestEndoint("/api/score/");
+}

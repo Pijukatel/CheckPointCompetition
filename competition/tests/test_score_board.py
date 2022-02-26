@@ -27,11 +27,11 @@ def test_sorting_by_score(load_confirmed_teams_1_2_3_and_checkpoints_1_2_3):
         point.save()
 
     teams_order = get_teams_order()
-    assert teams_order[0].team == teams[1]
+    assert teams_order[0].team == teams[1].name
     assert teams_order[0].points == 3
-    assert teams_order[1].team == teams[0]
+    assert teams_order[1].team == teams[0].name
     assert teams_order[1].points == 1
-    assert teams_order[2].team == teams[2]
+    assert teams_order[2].team == teams[2].name
     assert teams_order[2].points == 0
 
 
@@ -53,9 +53,9 @@ def test_sorting_by_score_and_date(load_confirmed_teams_1_2_3_and_checkpoints_1_
         point2.save()
 
     teams_order = get_teams_order()
-    assert teams_order[0].team == teams[1]
+    assert teams_order[0].team == teams[1].name
     assert teams_order[0].points == 1
-    assert teams_order[1].team == teams[0]
+    assert teams_order[1].team == teams[0].name
     assert teams_order[1].points == 1
-    assert teams_order[2].team == teams[2]
+    assert teams_order[2].team == teams[2].name
     assert teams_order[2].points == 0
