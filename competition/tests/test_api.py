@@ -127,6 +127,7 @@ def test_score(client_with_logged_user1, load_4points_from_2_confiremed_teams_2c
         for point in load_4points_from_2_confiremed_teams_2checkpoints:
             if point.team_id == G.team1_name:
                 point.confirmed = True
+                point.visit_date = pytz.UTC.localize(datetime.now())
                 point.save()
 
     response = client_with_logged_user1.get("/api/score/", follow=True)

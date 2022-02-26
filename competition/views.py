@@ -1,5 +1,7 @@
 import json
+from datetime import datetime
 
+import pytz
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -231,6 +233,8 @@ def checkpoint_view(request, *args, **kwargs):
             if form.is_valid() and not point.confirmed:
                 form.save()
                 point.deny_reason = ""  # Reset deny reason with update.
+                point.visit_date = pytz.UTC.localize(datetime.now())
+                point.save()
             context.update({"point_photo": point.photo, "deny_reason": point.deny_reason,
                             "point_confirmed": point.confirmed, "form": form, "team": team_object.name})
             return render(request, "competition/components/checkpoint_detail_confirmed_team.html", context)
