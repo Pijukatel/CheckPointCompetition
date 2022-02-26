@@ -14,8 +14,7 @@ async function scoreBoardUpdate() {
         const columns = rows[index].children
         columns[0].innerHTML = `<a href="/team/${score.team}/"> ${score.team} </a>`
         columns[1].innerHTML = score.points
-        columns[2].innerHTML = score.latest_update
-        console.log((score));
+        columns[2].innerHTML = score.latest_updated_point
     })
 
 }

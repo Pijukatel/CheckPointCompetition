@@ -47,4 +47,4 @@ class ScoreSerializer:
         return [{
             "team": team.team,
             "points": team.points,
-            "latest_update": team.latest_updated_point.strftime("%H:%M:%S")} for team in teams_with_score]
+            "latest_updated_point": team.latest_updated_point.strftime("%H:%M:%S")} for team in teams_with_score]
