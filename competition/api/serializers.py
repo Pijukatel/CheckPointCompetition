@@ -37,3 +37,14 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username")
+
+
+class ScoreSerializer:
+    def __init__(self, teams_with_score):
+        self.data = self.serialize(teams_with_score)
+
+    def serialize(self, teams_with_score):
+        return [{
+            "team": team.team,
+            "points": team.points,
+            "latest_updated_point": team.latest_updated_point.strftime("%H:%M:%S")} for team in teams_with_score]

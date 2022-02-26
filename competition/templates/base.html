@@ -24,10 +24,10 @@
             <div id="navs">
                 <nav id="main_navbar">
                 <ul>
-                    <li><a href="{% url 'map' %}">Map</a></li>
                     <li><a href="{% url 'teams' %}">Teams</a></li>
-                    <li><a href="{% url 'users' %}">Users</a></li>
                     <li><a href="{% url 'checkpoints' %}">Checkpoints</a></li>
+                    <li><a href="{% url 'users' %}">Users</a></li>
+
                 </ul>
                 </nav>
 
@@ -63,6 +63,8 @@
                 {% endif %}
             </section>
             <section id="content">
+                <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+                <script src="{% static 'js/api.js' %}"></script>
                 {% block content %}
                 {% endblock content %}
             </section>
@@ -71,8 +73,6 @@
         <footer>
             {% block footer %}
             {% endblock footer %}
-        <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
-        <script src="{% static 'js/api.js' %}"></script>
         </footer>
     </main>
 </body>

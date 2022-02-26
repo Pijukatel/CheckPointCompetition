@@ -7,7 +7,7 @@ from competition.models import Team
 
 
 class TeamWithScore(NamedTuple):
-    team: Team
+    team: str
     points: int
     latest_updated_point: datetime
 
@@ -15,7 +15,7 @@ class TeamWithScore(NamedTuple):
 def get_teams_order():
     """Sort teams by score descending and latest updated point ascending."""
     points = Point.objects.all()
-    teams = Team.objects.all()
+    teams = [team.name for team in Team.objects.all()]
     teams_with_score: List[TeamWithScore] = []
     for team in teams:
         teams_with_score.append(get_team_with_score(team, points))
@@ -23,11 +23,11 @@ def get_teams_order():
                   key=lambda team_with_score: (-team_with_score.points, team_with_score.latest_updated_point))
 
 
-def get_team_with_score(team: Team, points: List[Point]):
+def get_team_with_score(team: str, points: List[Point]):
     point_counter = 0
     latest_confirmed_point_time = pytz.UTC.localize(datetime(2000, 1, 1))  # Any old date from past.
     for point in points:
-        if point.team == team and point.confirmed:
+        if point.team_id == team and point.confirmed:
             point_counter += 1
             latest_confirmed_point_time = max(latest_confirmed_point_time, point.confirmation_date)
     return TeamWithScore(team, point_counter, latest_confirmed_point_time)

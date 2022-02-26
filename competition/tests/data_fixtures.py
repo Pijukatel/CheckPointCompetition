@@ -221,3 +221,21 @@ def load_confirmed_teams_1_2_3_and_checkpoints_1_2_3(load_team1, load_team2, loa
     yield teams, checkpoints
     for point in Point.objects.all():
         point.delete()
+
+
+@pytest.fixture
+def load_4points_from_2_confiremed_teams_2checkpoints(
+        load_registered_user1_with_team1,
+        load_registered_user2_with_team2,
+        load_checkpoint1,
+        load_checkpoint2):
+    _, team1, _ = load_registered_user1_with_team1
+    _, team2, _ = load_registered_user2_with_team2
+    team1.confirmed = True
+    team1.save()
+    team2.confirmed = True
+    team2.save()
+    points = Point.objects.all()
+    yield points
+    for point in points:
+        point.delete()
