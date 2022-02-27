@@ -36,7 +36,7 @@ class RedirectToTopOfConfirmationQueue(RedirectView):
     template_name_when_nothing_to_check = "competition/photo_confirmation_empty.html"
 
     def get_redirect_url(self, *args, **kwargs):
-        objects_to_check = self.model.objects.filter(confirmed=False).exclude(photo='')
+        objects_to_check = self.model.objects.filter(confirmed=False, deny_reason="").exclude(photo='')
         if objects_to_check.exists():
             self.checked_object = objects_to_check.earliest('confirmation_date')
             self.checked_object.save()

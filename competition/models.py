@@ -21,7 +21,7 @@ class Team(models.Model):
     photo = models.ImageField(upload_to="teams", null=True, blank=True)
     confirmed = models.BooleanField(default=False)
     confirmation_date = models.DateTimeField(auto_now=True)
-    deny_reason = models.CharField(max_length=150, null=True, blank=True)
+    deny_reason = models.CharField(max_length=150, blank=True, default="")
 
     def get_absolute_url(self):
         return reverse("team", kwargs={"pk": self.name})
@@ -41,7 +41,7 @@ class Point(models.Model):
     confirmed = models.BooleanField(default=False)
     confirmation_date = models.DateTimeField(auto_now=True)
     visit_date = models.DateTimeField(auto_now_add=True)
-    deny_reason = models.CharField(max_length=150, null=True, blank=True)
+    deny_reason = models.CharField(max_length=150, blank=True, default="")
 
     def get_absolute_url(self):
         return reverse("point", kwargs={"team": self.team_id,
