@@ -52,6 +52,8 @@ class TestSetup:
     teams = {
         "TestTeam1": ("TestUser1", "TestUser2"),
         "TestTeam2": ("TestUser3", "TestUser4"),
+        "TestTeam3": ("TestUser5", "TestUser6"),
+        "TestTeam4": ("TestUser7", "TestUser8"),
     }
     password = G.user1_password
     image_name = "test_image.jpg"
@@ -130,12 +132,22 @@ def logged_user_in_team_upload_team_photo(team_name, image_path, browser):
     assert Team.objects.filter(name=team_name)[0].photo.name.startswith(f"teams/{TestSetup.image_name[:-4]}")
 
 
-def staff_user_confirm_team_photo(browser):
+def staff_user_confirm_team_photo(browser, deny=False):
     browser.get(G.test_address + "team/photo-confirm/")
-    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "confirm_button")))
-    team_name = browser.find_element_by_id("TeamName").text
-    browser.find_element_by_id("confirm_button").click()
-    assert Team.objects.get(name=team_name).confirmed
+    if deny:
+        deny_reason = "some reason"
+        WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "id_deny_reason")))
+        browser.find_element_by_id("id_deny_reason").send_keys(deny_reason)
+        WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "deny_button")))
+        team_name = browser.find_element_by_id("TeamName").text
+        browser.find_element_by_id("deny_button").click()
+        assert not Team.objects.get(name=team_name).confirmed
+        assert Team.objects.get(name=team_name).deny_reason == deny_reason
+    else:
+        WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "confirm_button")))
+        team_name = browser.find_element_by_id("TeamName").text
+        browser.find_element_by_id("confirm_button").click()
+        assert Team.objects.get(name=team_name).confirmed
 
 
 def logged_user_in_team_upload_point_photo(browser, team_name, checkpoint_name, image_path):
@@ -155,16 +167,38 @@ def logged_user_in_team_upload_point_photo(browser, team_name, checkpoint_name, 
     assert not point.deny_reason
 
 
-def staff_user_confirm_point_photo(browser):
+def staff_user_confirm_point_photo(browser, deny=False):
     browser.get(G.test_address + "point/photo-confirm/")
-    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "confirm_button")))
-    browser.find_element_by_id("confirm_button").click()
-    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "TeamName")))
-    team_name = browser.find_element_by_id("TeamName").text
-    checkpoint_name = browser.find_element_by_id("CheckpointName").text
-    point = Point.objects.get(checkpoint_id=checkpoint_name, team_id=team_name)
-    assert point.confirmed
-    assert not point.deny_reason
+    if deny:
+        deny_reason = "some reason"
+        WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "id_deny_reason")))
+        browser.find_element_by_id("id_deny_reason").send_keys(deny_reason)
+        WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "deny_button")))
+        browser.find_element_by_id("deny_button").click()
+        WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "TeamName")))
+        team_name = browser.find_element_by_id("TeamName").text
+        checkpoint_name = browser.find_element_by_id("CheckpointName").text
+        point = Point.objects.get(checkpoint_id=checkpoint_name, team_id=team_name)
+        assert not point.confirmed
+        assert point.deny_reason == deny_reason
+    else:
+        WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "confirm_button")))
+        browser.find_element_by_id("confirm_button").click()
+        WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "TeamName")))
+        team_name = browser.find_element_by_id("TeamName").text
+        checkpoint_name = browser.find_element_by_id("CheckpointName").text
+        point = Point.objects.get(checkpoint_id=checkpoint_name, team_id=team_name)
+        assert point.confirmed
+        assert not point.deny_reason
+
+
+def check_expected_positions(browser, positions):
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, "Teams")))
+    browser.find_element_by_link_text("Teams").click()
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "scoreBoard")))
+    rows = browser.find_element_by_id("scoreBoard").find_elements_by_tag_name("tr")
+    for row, expected_team in zip(rows, positions):
+        assert row.find_elements_by_tag_name("a")[0].text == expected_team
 
 
 @pytest.mark.disable_default_time
@@ -237,19 +271,18 @@ def test_system(live_server, browser_factory, tmp_path, load_registered_user_wit
 
     with freeze_time(COMPETITION + timedelta(seconds=1)):
         # Start competition
-        # Register another other team
-
-        # TODO: Add time keeping test for leaderboard (check photo upload datetime)
-        # Team 1,2 visit checkpoint 1
-        with browser_factory() as browser:
-            browser.get(G.test_address)
-            team = "TestTeam1"
-            login(TestSetup.teams[team][1], browser)
-            logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
-
+        # Team 2 visit checkpoint 1
         with browser_factory() as browser:
             browser.get(G.test_address)
             team = "TestTeam2"
+            login(TestSetup.teams[team][1], browser)
+            logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
+
+    with freeze_time(COMPETITION + timedelta(seconds=2)):
+        # Team 1 visit checkpoint 1
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            team = "TestTeam1"
             login(TestSetup.teams[team][1], browser)
             logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
 
@@ -259,4 +292,113 @@ def test_system(live_server, browser_factory, tmp_path, load_registered_user_wit
             login(G.user_staff_name, browser)
             staff_user_confirm_point_photo(browser)
             staff_user_confirm_point_photo(browser)
-    # Leader board
+
+        # Leader board 2,1 (same points, but team1 later point upload)
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            check_expected_positions(browser, positions=("TestTeam2", "TestTeam1"))
+
+        # Register fifth and sixth user.
+        for username in TestSetup.teams["TestTeam3"]:
+            with browser_factory() as browser:
+                browser.get(G.test_address)
+                create_user(username, browser)
+                login(username, browser)
+
+        # Fifth user creates team and adds sixth user, upload team photo
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(TestSetup.teams["TestTeam3"][0], browser)
+            logged_user_creates_team("TestTeam3", browser)
+            add_user_to_team("TestTeam3", TestSetup.teams["TestTeam3"][1], browser)
+            logged_user_in_team_upload_team_photo("TestTeam3", image_path, browser)
+
+        # Team3 photo is confirmed by staff user
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(G.user_staff_name, browser)
+            staff_user_confirm_team_photo(browser)
+
+        # Leader board 2,1,3
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            check_expected_positions(browser, positions=("TestTeam2", "TestTeam1", "TestTeam3"))
+
+        # Register third and fourth user.
+        for username in TestSetup.teams["TestTeam4"]:
+            with browser_factory() as browser:
+                browser.get(G.test_address)
+                create_user(username, browser)
+                login(username, browser)
+
+        # Seventh user creates team and adds Eith user, upload team photo
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(TestSetup.teams["TestTeam4"][0], browser)
+            logged_user_creates_team("TestTeam4", browser)
+            add_user_to_team("TestTeam4", TestSetup.teams["TestTeam4"][1], browser)
+            logged_user_in_team_upload_team_photo("TestTeam4", image_path, browser)
+
+        # Team4 photo is denied by staff user
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(G.user_staff_name, browser)
+            staff_user_confirm_team_photo(browser, deny=True)
+
+    with freeze_time(COMPETITION + timedelta(seconds=3)):
+        # team3 visits checkpoint2, checkpoint1 in t + 3
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            team = "TestTeam3"
+            login(TestSetup.teams[team][1], browser)
+            logged_user_in_team_upload_point_photo(browser, team, G.checkpoint1_name, image_path)
+            logged_user_in_team_upload_point_photo(browser, team, G.checkpoint2_name, image_path)
+
+        # Admin confirms visits
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(G.user_staff_name, browser)
+            staff_user_confirm_point_photo(browser)
+            staff_user_confirm_point_photo(browser)
+
+        # Leader board 3,2,1,4
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            check_expected_positions(browser, positions=("TestTeam3", "TestTeam2", "TestTeam1", "TestTeam4"))
+
+        # Team 2 visit checkpoint 2
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            team = "TestTeam1"
+            login(TestSetup.teams[team][1], browser)
+            logged_user_in_team_upload_point_photo(browser, team, G.checkpoint2_name, image_path)
+
+        # Admin deny visit
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(G.user_staff_name, browser)
+            staff_user_confirm_point_photo(browser, deny=True)
+
+        # Leader board 3,2,1,4
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            check_expected_positions(browser, positions=("TestTeam3", "TestTeam2", "TestTeam1", "TestTeam4"))
+
+    with freeze_time(COMPETITION + timedelta(seconds=4)):
+        # team1 visits checkpoint2 in t + 4
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            team = "TestTeam1"
+            login(TestSetup.teams[team][1], browser)
+            logged_user_in_team_upload_point_photo(browser, team, G.checkpoint2_name, image_path)
+
+        # Admin confirms visit
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            login(G.user_staff_name, browser)
+            staff_user_confirm_point_photo(browser)
+
+        # Leader board 3,1,2,4
+        with browser_factory() as browser:
+            browser.get(G.test_address)
+            check_expected_positions(browser, positions=("TestTeam3", "TestTeam1", "TestTeam2", "TestTeam4"))

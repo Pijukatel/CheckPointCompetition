@@ -29,5 +29,5 @@ def get_team_with_score(team: str, points: List[Point]):
     for point in points:
         if point.team_id == team and point.confirmed:
             point_counter += 1
-            latest_confirmed_point_time = max(latest_confirmed_point_time, point.confirmation_date)
+            latest_confirmed_point_time = max(latest_confirmed_point_time, point.visit_date)
     return TeamWithScore(team, point_counter, latest_confirmed_point_time)

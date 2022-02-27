@@ -41,15 +41,15 @@ def test_sorting_by_score_and_date(load_confirmed_teams_1_2_3_and_checkpoints_1_
     # Confirm 1 points of team 2 in t
     # Confirm 1 points of team 1 in t +1
     # Confirm 0 points of team 3
-    confirmation_team2 = 0
-    confirmation_team3 = 0
     with freeze_time(COMPETITION):
         point1 = Point.objects.filter(team=teams[1]).first()
         point1.confirmed = True
+        point1.visit_date = COMPETITION
         point1.save()
     with freeze_time(COMPETITION + timedelta(seconds=1)):
         point2 = Point.objects.filter(team=teams[0]).first()
         point2.confirmed = True
+        point2.visit_date = COMPETITION + timedelta(seconds=1)
         point2.save()
 
     teams_order = get_teams_order()

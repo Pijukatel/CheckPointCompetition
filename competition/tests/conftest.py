@@ -6,6 +6,7 @@ from unittest import mock
 import pytz
 from django.test import Client
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 from datetime import datetime, timedelta
 from competition.middleware.time_middleware import Stage, redirect_to_pre_registration_countdown, return_normal_response, stages_start_times
 from competition.tests.globals_for_tests import G
@@ -136,8 +137,10 @@ def delete_test_image():
 def browser_factory():
     class ContextBrowser:
         def __init__(self):
+            options = Options()
+            options.headless = True
             path_to_gecko_driver_exe = os.path.join(os.path.dirname(__file__), G.path_to_gecko_driver)
-            self.driver = webdriver.Firefox(executable_path=path_to_gecko_driver_exe)
+            self.driver = webdriver.Firefox(options=options, executable_path=path_to_gecko_driver_exe)
 
         def __enter__(self):
             return self.driver
