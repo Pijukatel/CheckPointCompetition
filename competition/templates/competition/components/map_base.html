@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.12.0/css/ol.css" type="text/css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
     <style>
       .map {
         height: 800px;
@@ -15,6 +16,12 @@
 
 </head>
 <body style="margin:0px">
+    <div class="mapOptionsCont">
+        <div class="mapOptions">
+            <input type="checkbox" value="showUsers" checked>
+            <label for="showUsers"> Show users.</label><br>
+        </div>
+    </div>
     <div id="popup" data-original-title=""></div>
     <div id="map" class="map"></div>
     <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.12.0/build/ol.js"></script>

@@ -97,23 +97,35 @@ function createBaseLayerMap() {
       $(element).popover('dispose');
     });
 
-    return {"checkpointSource": checkpointSource, "userSource": userSource}
+
+    return [{"checkpointSource": checkpointSource, "userSource": userSource}, {"checkpointLayer": checkpointLayer, "userLayer": userLayer}]
 }
 
 
 async function fullMap() {
-    const sources = createBaseLayerMap()
+    const [sources, layers] = createBaseLayerMap()
+
     const [user, membership] = await Promise.all([requestUser(),requestMemberships()]);
     // Add all checkpoints to map once.
     addCheckpoints(sources.checkpointSource, membership)
+    addUsers(sources.userSource)
+
+    // User visibility toggle.
+    const userToggle = document.querySelector('input')
+    userToggle.addEventListener('change',(event) => {
+        if (event.currentTarget.checked) {
+            layers["userLayer"].setVisible(true);
+        } else {
+            layers["userLayer"].setVisible(false);
+        }
+})
+
 
     // Periodically update user positions in map.
     setInterval(()=>{
         sources.userSource.clear()
         addUsers(sources.userSource)
     }, 5000)
-
-
 }
 
 async function addMarker(mapSource, point, markerStyle, markerText){
