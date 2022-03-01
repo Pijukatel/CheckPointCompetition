@@ -54,6 +54,28 @@ section#content_container{
     margin: 5px;
 }
 
+.mapOptions{
+    background-color:rgba(0,60,136,.4);
+    border-radius: 4px;
+    padding-left: 2px;
+    padding-right: 2px;
+    color: white;
+    font-weight: bold;
+}
 
+.mapOptionsCont {
+    position:absolute;
+    z-index: 1;
+    top: 20px;
+    left: 40px;
+    background-color: rgba(255, 255, 255, .6);
+    border-radius: 4px;
+    padding: 2px
+}
+
+input[type="checkbox"] {
+    background-color: #398607;
+
+}
 
 
