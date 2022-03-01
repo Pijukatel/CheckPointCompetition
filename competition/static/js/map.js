@@ -98,20 +98,27 @@ function createBaseLayerMap() {
     });
 
 
-    return [{"checkpointSource": checkpointSource, "userSource": userSource}, {"checkpointLayer": checkpointLayer, "userLayer": userLayer}]
+    return [{"checkpointSource": checkpointSource, "userSource": userSource}, {"checkpointLayer": checkpointLayer, "userLayer": userLayer}, map]
 }
 
 
 async function fullMap() {
-    const [sources, layers] = createBaseLayerMap()
-
+    const [sources, layers, map] = createBaseLayerMap()
+    // Expose focus function for other scripts outside of iframe.
+    window.focusOnPoint = (lon, lat) => {
+        console.log(`Focusing on: ${lon} ${lat}`)
+        map.setView( new ol.View({
+            center: ol.proj.fromLonLat([lon+0.0045, lat-.0045]), // Offset for zoom 15 and iframe layout.
+            zoom: 15
+        }));
+    }
     const [user, membership] = await Promise.all([requestUser(),requestMemberships()]);
     // Add all checkpoints to map once.
     addCheckpoints(sources.checkpointSource, membership)
     addUsers(sources.userSource)
 
     // User visibility toggle.
-    const userToggle = document.querySelector('input')
+    const userToggle = document.querySelector('input[value="showUsers"]')
     userToggle.addEventListener('change',(event) => {
         if (event.currentTarget.checked) {
             layers["userLayer"].setVisible(true);
@@ -153,7 +160,7 @@ async function addCheckpoints(mapSource, memberships) {
             visited=true
         }
         addMarker(mapSource, checkpoint, style,
-            `Name: ${checkpoint.name}<br> GPS: lon= ${checkpoint.gps_lon}, lat= ${checkpoint.gps_lon}, visited= ${visited}`)
+            `Name: ${checkpoint.name}<br> GPS: lon= ${checkpoint.gps_lon}, lat= ${checkpoint.gps_lat}, visited= ${visited}`)
     })
 
 
@@ -168,7 +175,6 @@ async function addUsers(mapSource) {
             style = teamStyleMapping[team]
         }
         else {
-            console.log(styles['Users'][Object.keys(teamStyleMapping).length])
             style = styles['Users'][Object.keys(teamStyleMapping).length]
             teamStyleMapping[team] = style
         }

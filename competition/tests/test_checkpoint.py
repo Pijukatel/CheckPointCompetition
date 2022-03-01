@@ -107,6 +107,6 @@ def test_checkpoint_detail_view_contains_correct_data(client):
     response = client.get("/checkpoint/TestCheckPoint1/", follow=True)
     assert bytes(f"Name: {G.checkpoint1_name}", encoding=response.charset) in response.content
     assert bytes(f"Description: {G.checkpoint1_description}", encoding=response.charset) in response.content
-    assert bytes(f"Longitudinal: {G.checkpoint1_lon}", encoding=response.charset) in response.content
-    assert bytes(f"Lateral: {G.checkpoint1_lat}", encoding=response.charset) in response.content
+    assert bytes(f'Longitudinal: <span id="focusLon">{G.checkpoint1_lon}', encoding=response.charset) in response.content
+    assert bytes(f'Lateral: <span id="focusLat">{G.checkpoint1_lat}', encoding=response.charset) in response.content
     # TODO: TEST IMAGE SOMEHOW...

@@ -8,8 +8,8 @@
                 <ul>Checkpoint details:
                     <li>Name: {{ checkpoint.name }}</li>
                     <li>Description: {{ checkpoint.description }}</li>
-                    <li>Longitudinal: {{ checkpoint.gps_lon }}</li>
-                    <li>Lateral: {{ checkpoint.gps_lat }}</li>
+                    <li>Longitudinal: <span id="focusLon">{{ checkpoint.gps_lon }}</span></li>
+                    <li>Lateral: <span id="focusLat">{{ checkpoint.gps_lat }}</span></li>
                 </ul>
 
             </div>
@@ -32,8 +32,12 @@
         </div>
     </div>
 
-
-
-
+    <script type="text/javascript">
+        const iframe = document.getElementsByTagName("iframe")[0]
+        const ol = iframe.contentWindow.ol
+        const lon = Number(document.getElementById("focusLon").textContent)
+        const lat = Number(document.getElementById("focusLat").textContent)
+        iframe.onload = function() {setTimeout(() => {iframe.contentWindow.focusOnPoint(lon,lat)},1000)}
+    </script>
 {% endblock content %}
 
