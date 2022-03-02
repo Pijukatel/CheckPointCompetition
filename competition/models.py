@@ -68,6 +68,19 @@ class Membership(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
 
+class Invitation(models.Model):
+    """Intermediate model for user being able to be member of a group."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+
+    class Meta:
+        """Unique invitation for each team and user."""
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "team"],
+                name="%(app_label)s_%(class)s_one_per_team_and_user"),
+        ]
+
 
 class UserPosition(models.Model):
     """Intermediate model to add position to each user."""

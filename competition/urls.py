@@ -7,7 +7,7 @@ from .models import CheckPoint, Team, Point
 from .views import (home, RegisterUser, login_page, logout_link, UserDetail, UserUpdate, UserDelete, TeamDetail,
                     TeamCreate, leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
                     TeamPhotoConfirmationView, PointDetail, checkpoint_view,
-                    CheckpointList, TeamList, base_map_view)
+                    CheckpointList, TeamList, base_map_view, delete_inivation)
 from .views_generic import RedirectToTopOfConfirmationQueue
 
 urlpatterns = [
@@ -34,6 +34,7 @@ urlpatterns = [
     path("team/<str:pk>/update/", TeamUpdate.as_view(), name="team_update"),
     path("team/<str:pk>/delete/", TeamDelete.as_view(), name="team_delete"),
     path("team/<str:pk>/add_member/", add_team_member, name="add_team_member"),
+    path("team/<str:pk>/<str:invited_user>/", delete_inivation, name="delete_invitation"),
     path("teams/", TeamList.as_view(), name="teams"),
     path("map_base/", base_map_view, name='map_base'),
     path("api/user_positions/", user_positions, name="api_user_positions"),
