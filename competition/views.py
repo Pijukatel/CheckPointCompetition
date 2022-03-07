@@ -74,7 +74,7 @@ def leave_team(request):
 
 @only_team_member
 @login_required
-def add_team_member(request, pk):
+def invite_member(request, pk):
     """Only existing members of team can add team members."""
     if Team.objects.get(name=pk).confirmed:
         return HttpResponsePermanentRedirect("../")
@@ -90,7 +90,7 @@ def add_team_member(request, pk):
         else:
             print(form.errors)
     context = {"form": form}
-    return render(request, "competition/team_add_member.html", context)
+    return render(request, "competition/team_invite_member.html", context)
 
 @only_team_member
 @login_required

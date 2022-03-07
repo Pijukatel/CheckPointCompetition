@@ -5,7 +5,7 @@ from django.views.generic import ListView
 from .api.views import user_positions, checkpoint_positions, memberships, current_user_pos, teams, points, user, score
 from .models import CheckPoint, Team, Point
 from .views import (home, RegisterUser, login_page, logout_link, UserDetail, UserUpdate, UserDelete, TeamDetail,
-                    TeamCreate, leave_team, add_team_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
+                    TeamCreate, leave_team, invite_member, TeamUpdate, TeamDelete, PointPhotoConfirmationView,
                     TeamPhotoConfirmationView, PointDetail, checkpoint_view,
                     CheckpointList, TeamList, base_map_view, delete_inivation)
 from .views_generic import RedirectToTopOfConfirmationQueue
@@ -33,7 +33,7 @@ urlpatterns = [
     path("team/<str:pk>/", TeamDetail.as_view(), name="team"),
     path("team/<str:pk>/update/", TeamUpdate.as_view(), name="team_update"),
     path("team/<str:pk>/delete/", TeamDelete.as_view(), name="team_delete"),
-    path("team/<str:pk>/add_member/", add_team_member, name="add_team_member"),
+    path("team/<str:pk>/invite_member/", invite_member, name="invite_member"),
     path("team/<str:pk>/<str:invited_user>/", delete_inivation, name="delete_invitation"),
     path("teams/", TeamList.as_view(), name="teams"),
     path("map_base/", base_map_view, name='map_base'),

@@ -68,6 +68,7 @@ class Membership(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
 
+
 class Invitation(models.Model):
     """Intermediate model for user being able to be member of a group."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
