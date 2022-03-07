@@ -88,3 +88,49 @@ def test_invitation_post_creates_invitation(client_with_logged_user1):
     assert Invitation.objects.filter(user_id=user2_id, team_id=G.team1_name).exists()
     assert soup.select(".messages li")[
                0].text == f"User {G.user2_name} was invited. User's can confirm or deny invitation."
+
+
+@pytest.mark.usefixtures("load_registered_user3")
+@pytest.mark.usefixtures("load_registered_user2")
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+def test_invitation_pending_invitation_shown(client_with_logged_user1):
+    Invitation.objects.create(team_id=G.team1_name, user=User.objects.get(username=G.user2_name))
+    Invitation.objects.create(team_id=G.team1_name, user=User.objects.get(username=G.user3_name))
+    response = client_with_logged_user1.get(f"/team/{G.team1_name}/")
+    soup = BeautifulSoup(response.content)
+    assert {f"/team/{G.team1_name}/{G.user2_name}/", f"/team/{G.team1_name}/{G.user3_name}/"} == {
+        a["href"] for a in soup.findAll("a", href=True, text="Delete invitation.")}
+
+
+@pytest.mark.usefixtures("load_registered_user2")
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+def test_invitation_deleting_invitation(client_with_logged_user1):
+    invitation = Invitation.objects.create(team_id=G.team1_name, user=User.objects.get(username=G.user2_name))
+    response = client_with_logged_user1.get(f"/team/{G.team1_name}/{G.user2_name}/", follow=True)
+    assertTemplateUsed(response, "/".join([G.APP_NAME, "team_detail.html"]))
+    soup = BeautifulSoup(response.content)
+    assert soup.select(".messages li")[0].text == f"Invitation to {G.user2_name} was withdrawn."
+    with pytest.raises(Invitation.DoesNotExist):
+        invitation.refresh_from_db()
+
+
+@pytest.mark.usefixtures("load_registered_user2")
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+def test_invitation_deleting_invitation_anonymous_cant(client):
+    invitation = Invitation.objects.create(team_id=G.team1_name, user=User.objects.get(username=G.user2_name))
+    response = client.get(f"/team/{G.team1_name}/{G.user2_name}/", follow=True)
+    assertTemplateUsed(response, "/".join([G.APP_NAME, "login.html"]))
+    invitation.refresh_from_db()
+
+
+@pytest.mark.usefixtures("load_registered_user3")
+@pytest.mark.usefixtures("load_registered_user1_with_team1")
+@pytest.mark.django_db
+def test_invitation_deleting_invitation_non_member_cant(client_with_logged_user2):
+    invitation = Invitation.objects.create(team_id=G.team1_name, user=User.objects.get(username=G.user3_name))
+    response = client_with_logged_user2.get(f"/team/{G.team1_name}/{G.user3_name}/", follow=True)
+    assertTemplateUsed(response, "/".join([G.APP_NAME, "login.html"]))
+    invitation.refresh_from_db()
