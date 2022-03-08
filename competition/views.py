@@ -104,7 +104,29 @@ def delete_inivation(request, pk, invited_user):
                          f"Invitation to {invited_user} was withdrawn.")
     return redirect(reverse('team', args=[pk]))
 
+@login_required
+def refuse_invitation(request, pk):
+    """Refuse sent invitation."""
+    if Team.objects.get(name=pk).confirmed:
+        return HttpResponsePermanentRedirect("../")
+    Invitation.objects.get(team_id=pk, user=request.user).delete()
+    return HttpResponsePermanentRedirect("/")
 
+@login_required
+def accept_invitation(request, pk):
+    """Accept sent invitation."""
+    if Team.objects.get(name=pk).confirmed:
+        messages.add_message(request,
+                             messages.SUCCESS,
+                             f"Team was already confirmed. Can't join!")
+        return HttpResponsePermanentRedirect("../")
+    membership = Membership.objects.get(user=request.user)
+    membership.team_id = pk
+    membership.save()
+    messages.add_message(request,
+                         messages.SUCCESS,
+                         f"You have joined the team: {pk}.")
+    return HttpResponsePermanentRedirect("/")
 
 class RegisterUser(SuccessMessageMixin, CreateView):
     """Register view."""

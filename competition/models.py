@@ -119,6 +119,7 @@ def save_user_profile(sender, instance, **kwargs):
 @receiver(post_save, sender=Membership)
 def after_membership_save(sender, instance, **kwargs):
     delete_empty_teams()
+    delete_remaining_invitations(instance.user)
 
 
 @receiver(post_save, sender=Team)
@@ -129,6 +130,11 @@ def after_team_save(sender, instance, **kwargs):
     if instance.confirmed:
         create_team_points_for_each_checkpoint(instance)
 
+
+def delete_remaining_invitations(user):
+    """Delete all invitations for this user."""
+    for invitation in Invitation.objects.filter(user=user):
+        invitation.delete()
 
 def create_team_points_for_each_checkpoint(team):
     """This function creates empty points for each checkpoint."""
