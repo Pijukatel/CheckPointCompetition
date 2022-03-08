@@ -107,6 +107,14 @@ def client_with_logged_user2(load_registered_user2):
 
 
 @pytest.fixture
+def client_with_logged_user3(load_registered_user3):
+    """Return client with logged in user2."""
+    client = Client()
+    client.login(username=G.user3_name, password=G.user3_password)
+    return client
+
+
+@pytest.fixture
 def client_with_logged_user_staff(load_registered_user_with_is_staff):
     """Return client with logged in user with is_staff=True."""
     client = Client()

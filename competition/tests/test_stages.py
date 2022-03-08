@@ -81,7 +81,6 @@ def test_template_in_pre_registration_closed_views(client_with_logged_user1, tem
         ("team_detail.html", f"/team/{G.team1_name}/"),
         ("team_update.html", f"/team/{G.team1_name}/update/"),
         ("team_delete.html", f"/team/{G.team1_name}/delete/"),
-        ("team_add_member.html", f"/team/{G.team1_name}/add_member/"),
         ("login.html", "/team/photo-confirm/"),  # Redirect to staff
         ("team_list.html", "/teams/"),
     ])
