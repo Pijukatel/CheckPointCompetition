@@ -168,80 +168,6 @@ def test_auto_delete_empty_team(client_with_logged_user1):
 
 
 @pytest.mark.usefixtures("load_registered_user1_with_team1")
-@pytest.mark.usefixtures("load_registered_user2")
-@pytest.mark.django_db
-def test_add_member_to_team(client_with_logged_user1):
-    client_with_logged_user1.post(f"/team/{G.team1_name}/add_member/",
-                                  {"user": User.objects.get(username=G.user2_name).id},
-                                  follow=True)
-    assert Membership.objects.filter(user__username=G.user2_name, team__name=G.team1_name).exists()
-
-
-@pytest.mark.usefixtures("load_registered_user1_with_team1")
-@pytest.mark.usefixtures("load_registered_user2_with_team2")
-@pytest.mark.django_db
-def test_add_another_teams_member_to_team(client_with_logged_user1):
-    client_with_logged_user1.post(f"/team/{G.team1_name}/add_member/",
-                                  {"user": User.objects.get(username=G.user2_name).id},
-                                  follow=True)
-    assert not Membership.objects.filter(user__username=G.user2_name, team__name=G.team1_name).exists()
-    assert Membership.objects.filter(user__username=G.user2_name, team__name=G.team2_name).exists()
-
-
-@pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
-@pytest.mark.usefixtures("load_registered_user2")
-@pytest.mark.django_db
-def test_add_member_to_confirmed_team_post(client_with_logged_user1):
-    response = client_with_logged_user1.post(f"/team/{G.team1_name}/add_member/",
-                                             {"user": User.objects.get(username=G.user2_name).id},
-                                             follow=True)
-    assertTemplateUsed(response, "/".join([G.APP_NAME, "team_detail.html"]))
-    assert not Membership.objects.filter(user__username=G.user2_name, team__name=G.team1_name).exists()
-
-
-@pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
-@pytest.mark.usefixtures("load_registered_user2")
-@pytest.mark.django_db
-def test_add_member_to_confirmed_team(client_with_logged_user1):
-    response = client_with_logged_user1.get(f"/team/{G.team1_name}/add_member/", follow=True)
-    assertTemplateUsed(response, "/".join([G.APP_NAME, "team_detail.html"]))
-
-
-@pytest.mark.usefixtures("load_registered_user1_with_team1")
-@pytest.mark.usefixtures("load_registered_user2")
-@pytest.mark.django_db
-def test_add_member_to_team_by_non_team_member(client_with_logged_user2):
-    response = client_with_logged_user2.post(f"/team/{G.team1_name}/add_member/",
-                                             {"user": User.objects.get(username=G.user2_name).id},
-                                             follow=True)
-    assertTemplateUsed(response, "/".join([G.APP_NAME, "login.html"]))
-    assert bytes("Only team members can do that. Log in as member of that team.",
-                 encoding=response.charset) in response.content
-
-
-@pytest.mark.usefixtures("load_registered_user1_with_team1")
-@pytest.mark.usefixtures("load_registered_user2")
-@pytest.mark.django_db
-def test_add_member_to_team_by_anonymous(client):
-    response = client.post(f"/team/{G.team1_name}/add_member/",
-                           {"user": User.objects.get(username=G.user2_name).id},
-                           follow=True)
-    assertTemplateUsed(response, "/".join([G.APP_NAME, "login.html"]))
-    assert bytes("Only team members can do that. Log in as member of that team.",
-                 encoding=response.charset) in response.content
-
-
-@pytest.mark.usefixtures("load_registered_user1_with_team1")
-@pytest.mark.usefixtures("load_registered_user2")
-@pytest.mark.django_db
-def test_add_member_to_team_redirect(client_with_logged_user1):
-    response = client_with_logged_user1.post(f"/team/{G.team1_name}/add_member/",
-                                             {"user": User.objects.get(username=G.user2_name).id},
-                                             follow=True)
-    assertTemplateUsed(response, "/".join([G.APP_NAME, "team_detail.html"]))
-
-
-@pytest.mark.usefixtures("load_registered_user1_with_team1")
 @pytest.mark.django_db
 def test_team_update(client_with_logged_user1):
     response = client_with_logged_user1.get(f"/team/{G.team1_name}/update/", follow=True)
@@ -358,17 +284,3 @@ def test_delete_team1_deleted_from_db(client_with_logged_user1):
                                   follow=True)
     with pytest.raises(ObjectDoesNotExist):
         Team.objects.get(name=G.team1_name)
-
-
-@pytest.mark.usefixtures("load_registered_user1_with_confirmed_team1")
-@pytest.mark.django_db
-def test_add_member_link_not_available_for_member_of_confirmed_team(client_with_logged_user1):
-    response = client_with_logged_user1.get(f"/team/{G.team1_name}/", follow=True)
-    assert bytes('add_member/"> Add member. </a>', encoding=response.charset) not in response.content
-
-
-@pytest.mark.usefixtures("load_registered_user1_with_team1")
-@pytest.mark.django_db
-def test_add_member_link_available_for_member_of_unconfirmed_team(client_with_logged_user1):
-    response = client_with_logged_user1.get(f"/team/{G.team1_name}/", follow=True)
-    assert bytes('add_member/"> Add member. </a>', encoding=response.charset) in response.content

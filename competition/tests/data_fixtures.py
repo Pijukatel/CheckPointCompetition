@@ -30,6 +30,14 @@ def load_registered_user3():
 
 
 @pytest.fixture
+def load_registered_user4():
+    user = User(username=G.user4_name, password=make_password(G.user4_password))
+    user.save()
+    yield user
+    user.delete()
+
+
+@pytest.fixture
 def load_registered_user1_custom_position(load_registered_user1):
     user_position = UserPosition.objects.get(user=load_registered_user1)
     user_position.gps_lat = G.user1_lats[0]

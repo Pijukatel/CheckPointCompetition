@@ -17,8 +17,8 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.messages.views import SuccessMessageMixin
 
-from competition.forms import AddMembersForm, ConfirmPhoto, PointPhotoForm
-from competition.models import Membership, Team, Point, CheckPoint, UserPosition
+from competition.forms import AddMembersForm, ConfirmPhoto, PointPhotoForm, CreateInvitationForm
+from competition.models import Membership, Team, Point, CheckPoint, UserPosition, Invitation
 from competition.score_board import TeamWithScore, get_teams_order
 from competition.utils import only_team_member, get_existing_team_if_confirmed, only_non_team_member
 from competition.views_custom_mixins import SelfForUser, NoEditForConfirmed, GetPoint
@@ -74,24 +74,59 @@ def leave_team(request):
 
 @only_team_member
 @login_required
-def add_team_member(request, pk):
+def invite_member(request, pk):
     """Only existing members of team can add team members."""
     if Team.objects.get(name=pk).confirmed:
         return HttpResponsePermanentRedirect("../")
-    form = AddMembersForm()
+    form = CreateInvitationForm(by_user=request.user)
     if request.method == "POST":
         form = AddMembersForm(request.POST)
         if form.is_valid():
-            membership = Membership.objects.get(user=form.cleaned_data["user"])
-            membership.team = Team.objects.get(name=pk)
-            membership.save()
+            Invitation.objects.create(user_id=form.cleaned_data["user"], team_id=pk)
+            messages.add_message(request,
+                                 messages.SUCCESS,
+                                 f"User {User.objects.get(id=form.cleaned_data['user']).username} was invited. User's can confirm or deny invitation.")
             return redirect(reverse('team', args=[pk]))
         else:
             print(form.errors)
-
     context = {"form": form}
-    return render(request, "competition/team_add_member.html", context)
+    return render(request, "competition/team_invite_member.html", context)
 
+@only_team_member
+@login_required
+def delete_inivation(request, pk, invited_user):
+    """Delete sent invitation."""
+    if Team.objects.get(name=pk).confirmed:
+        return HttpResponsePermanentRedirect("../")
+    Invitation.objects.get(team_id=pk, user_id=User.objects.get(username=invited_user)).delete()
+    messages.add_message(request,
+                         messages.SUCCESS,
+                         f"Invitation to {invited_user} was withdrawn.")
+    return redirect(reverse('team', args=[pk]))
+
+@login_required
+def refuse_invitation(request, pk):
+    """Refuse sent invitation."""
+    if Team.objects.get(name=pk).confirmed:
+        return HttpResponsePermanentRedirect("../")
+    Invitation.objects.get(team_id=pk, user=request.user).delete()
+    return HttpResponsePermanentRedirect("/")
+
+@login_required
+def accept_invitation(request, pk):
+    """Accept sent invitation."""
+    if Team.objects.get(name=pk).confirmed:
+        messages.add_message(request,
+                             messages.SUCCESS,
+                             f"Team was already confirmed. Can't join!")
+        return HttpResponsePermanentRedirect("../")
+    membership = Membership.objects.get(user=request.user)
+    membership.team_id = pk
+    membership.save()
+    messages.add_message(request,
+                         messages.SUCCESS,
+                         f"You have joined the team: {pk}.")
+    return HttpResponsePermanentRedirect("/")
 
 class RegisterUser(SuccessMessageMixin, CreateView):
     """Register view."""
@@ -151,7 +186,8 @@ class TeamDetail(DetailView):
         if not self.extra_context:
             self.extra_context = {}
         members = [User.objects.get(username=team.user) for team in Membership.objects.filter(team=self.object)]
-        self.extra_context.update({"members": members})
+        invited_members = [User.objects.get(username=team.user) for team in Invitation.objects.filter(team=self.object)]
+        self.extra_context.update({"members": members, "invited_members": invited_members})
 
         return super().get_context_data(**kwargs)
 

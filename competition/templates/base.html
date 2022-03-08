@@ -57,7 +57,21 @@
                 {% if messages %}
                     <ul class="messages">
                         {% for message in messages %}
-                        <li{% if message.tags %} class="Message_{{ message.tags }}"{% endif %}>{{ message }}</li>
+                            <li{% if message.tags %} class="Message_{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </section>
+            <section id="invitations">
+                {% if invitations %}
+                    <ul class="invitations">
+                        {% for invitation in invitations %}
+                            <li class="Message_invitations">
+                                Invitation to team <a href="{% url 'team' invitation%}">{{ invitation }}</a>:
+                                <a href="{% url 'accept_invitation' invitation%}">Accept</a>
+                                or
+                                <a href="{% url 'refuse_invitation' invitation%}">Refuse</a>
+                            </li>
                         {% endfor %}
                     </ul>
                 {% endif %}

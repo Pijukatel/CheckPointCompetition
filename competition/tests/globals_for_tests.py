@@ -20,6 +20,8 @@ class Globals(NamedTuple):
     user2_lons = [0]
     user3_name = "TestName3"
     user3_password = user1_password
+    user4_name = "TestName4"
+    user4_password = user1_password
     user_staff_name = "TestNameStaff"
     user_staff_password = user1_password
     checkpoint1_name = "TestCheckPoint1"

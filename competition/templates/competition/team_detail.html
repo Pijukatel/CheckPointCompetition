@@ -34,8 +34,14 @@
             </li>
         {% endfor %}
         {% if not object.confirmed%}
+            {% for member in invited_members %}
+                <li>{{ member.username }}
+                    (Pending invitation.)
+                    {{ view.extra_context.team }} <a href="{% url 'delete_invitation' object.name member.username%}">Delete invitation.</a>
+                </li>
+            {% endfor %}
             <li>
-                <a href="{% url "add_team_member" object.name %}"> Add member. </a>
+                <a href="{% url "invite_member" object.name %}"> Invite member. </a>
             </li>
         {% endif %}
     </ul>

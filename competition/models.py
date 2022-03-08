@@ -69,6 +69,20 @@ class Membership(models.Model):
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
 
 
+class Invitation(models.Model):
+    """Intermediate model for user being able to be member of a group."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+
+    class Meta:
+        """Unique invitation for each team and user."""
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "team"],
+                name="%(app_label)s_%(class)s_one_per_team_and_user"),
+        ]
+
+
 class UserPosition(models.Model):
     """Intermediate model to add position to each user."""
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
@@ -98,13 +112,14 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     """Using signals to save membership when user is saved."""
-    if not instance.is_superuser:
+    if not instance.is_superuser and kwargs["update_fields"] != frozenset({"last_login"}):
         instance.membership.save()
 
 
 @receiver(post_save, sender=Membership)
 def after_membership_save(sender, instance, **kwargs):
     delete_empty_teams()
+    delete_remaining_invitations_to_user(instance.user)
 
 
 @receiver(post_save, sender=Team)
@@ -114,6 +129,19 @@ def after_team_save(sender, instance, **kwargs):
     This should happen only once as team should be locked for editing after confirmation."""
     if instance.confirmed:
         create_team_points_for_each_checkpoint(instance)
+        delete_remaining_invitations_to_team(instance)
+
+
+def delete_remaining_invitations_to_user(user):
+    """Delete all invitations for this user."""
+    for invitation in Invitation.objects.filter(user=user):
+        invitation.delete()
+
+
+def delete_remaining_invitations_to_team(team):
+    """Delete all invitations for this team."""
+    for invitation in Invitation.objects.filter(team=team):
+        invitation.delete()
 
 
 def create_team_points_for_each_checkpoint(team):

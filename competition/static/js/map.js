@@ -155,7 +155,8 @@ async function addCheckpoints(mapSource, memberships) {
     checkpoints.forEach((checkpoint) => {
         let style=styles['CheckpointNotVisited']
         let visited=false
-        if (team_name && points.find(point  => (point.checkpoint_id ==checkpoint.name && point.team_id==team_name)).confirmed) {
+        const point = points.find(point  => (point.checkpoint_id ==checkpoint.name && point.team_id==team_name))
+        if (team_name && point && point.confirmed) {
             style=styles['CheckpointVisited']
             visited=true
         }
