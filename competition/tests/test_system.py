@@ -44,7 +44,7 @@ from freezegun import freeze_time
 from datetime import timedelta
 
 from .globals_for_tests import G
-from ..models import Team, Membership, Point
+from ..models import Team, Membership, Point, Invitation
 from competition.settings import COUNTDOWN, PRE_REGISTRATION, COMPETITION, ARCHIVED
 
 
@@ -110,18 +110,25 @@ def logged_user_creates_team(team_name, browser):
     assert Membership.objects.filter(user__username=browser.username, team__name=team_name).exists()
 
 
-def add_user_to_team(team_name, username, browser):
-    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, team_name)))
-    browser.find_element_by_link_text(team_name).click()
-    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, "Add member.")))
-    browser.find_element_by_link_text("Add member.").click()
+def send_invite(browser, invited_user):
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "team_link")))
+    team_link = browser.find_element_by_id("team_link")
+    team_name = team_link.text
+    team_link.click()
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, "Invite member.")))
+    browser.find_element_by_link_text("Invite member.").click()
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.ID, "id_user")))
+    select = Select(browser.find_element_by_id("id_user"))
+    select.select_by_visible_text(invited_user)
+    browser.find_element_by_id("invite_member_button").click()
+    assert Invitation.objects.filter(user__username=invited_user, team__name=team_name).exists()
 
-    select = Select(browser.find_element_by_id('id_user'))
-    select.select_by_visible_text(username)
-    browser.find_element_by_id("add_member_button").click()
-    assert Membership.objects.filter(user__username=browser.username, team__name=team_name).exists()
-    assert Membership.objects.filter(user__username=username, team__name=team_name).exists()
-
+def accept_invite(browser, team_to_accept):
+    browser.get(G.test_address)
+    WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.CLASS_NAME, "Message_invitations")))
+    browser.find_element_by_xpath(f'//a[contains(@href,"/team/{team_to_accept}/accept/")]').click()
+    user = browser.find_element_by_id("logged_user_link").text
+    assert Membership.objects.filter(user__username=user, team_id=team_to_accept)
 
 def logged_user_in_team_upload_team_photo(team_name, image_path, browser):
     WebDriverWait(browser, TestSetup.wait).until(EC.presence_of_element_located((By.LINK_TEXT, team_name)))
@@ -251,12 +258,14 @@ def test_system(live_server, browser_factory, tmp_path, load_registered_user_wit
 
             # User 1 adds user 2 to the team
             user1_browser.get(G.test_address)
-            add_user_to_team("TestTeam1", TestSetup.teams["TestTeam1"][1], user1_browser)
+            send_invite(user1_browser, TestSetup.teams["TestTeam1"][1])
+            accept_invite(user2_browser, "TestTeam1")
 
             # Third user creates team and adds fourth user, upload team photo
             user3_browser.get(G.test_address)
             logged_user_creates_team("TestTeam2", user3_browser)
-            add_user_to_team("TestTeam2", TestSetup.teams["TestTeam2"][1], user3_browser)
+            send_invite(user3_browser, TestSetup.teams["TestTeam2"][1])
+            accept_invite(user4_browser, "TestTeam2")
             logged_user_in_team_upload_team_photo("TestTeam2", image_path, user3_browser)
 
             # User1 uploads team1 photo
@@ -304,7 +313,8 @@ def test_system(live_server, browser_factory, tmp_path, load_registered_user_wit
 
             # Fifth user creates team and adds sixth user, upload team photo
             logged_user_creates_team("TestTeam3", user5_browser)
-            add_user_to_team("TestTeam3", TestSetup.teams["TestTeam3"][1], user5_browser)
+            send_invite(user5_browser, TestSetup.teams["TestTeam3"][1])
+            accept_invite(user6_browser, "TestTeam3")
             logged_user_in_team_upload_team_photo("TestTeam3", image_path, user5_browser)
 
             # Team3 photo is confirmed by staff user
@@ -327,10 +337,11 @@ def test_system(live_server, browser_factory, tmp_path, load_registered_user_wit
             create_user(TestSetup.teams["TestTeam4"][1], user8_browser)
             login(TestSetup.teams["TestTeam4"][1], user8_browser)
 
-            # Seventh user creates team and adds Eith user, upload team photo
+            # Seventh user creates team and adds Eighth user, upload team photo
             user7_browser.get(G.test_address)
             logged_user_creates_team("TestTeam4", user7_browser)
-            add_user_to_team("TestTeam4", TestSetup.teams["TestTeam4"][1], user7_browser)
+            send_invite(user7_browser, TestSetup.teams["TestTeam4"][1])
+            accept_invite(user8_browser, "TestTeam4")
             logged_user_in_team_upload_team_photo("TestTeam4", image_path, user7_browser)
 
             # Team4 photo is denied by staff user

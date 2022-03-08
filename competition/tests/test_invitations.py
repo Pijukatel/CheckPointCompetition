@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from pytest_django.asserts import assertTemplateUsed
 from bs4 import BeautifulSoup
 from .globals_for_tests import G
+from .test_user_administration import login_test_user
 from ..models import Invitation, Team, Membership
 
 
@@ -210,3 +211,12 @@ def test_invitation_shown_as_message_everywhere(client_with_logged_user3, url):
     response = client_with_logged_user3.get(url, follow=True)
     soup = BeautifulSoup(response.content)
     assert len(soup.select('.Message_invitations')) == 2
+
+
+@pytest.mark.usefixtures("load_registered_user2_with_team2")
+@pytest.mark.usefixtures("load_registered_user1")
+@pytest.mark.django_db
+def test_invitation_not_deleted_on_login(client):
+    Invitation.objects.create(team_id=G.team2_name, user=User.objects.get(username=G.user1_name))
+    login_test_user(client)
+    assert Invitation.objects.filter(team_id=G.team2_name, user=User.objects.get(username=G.user1_name)).exists()

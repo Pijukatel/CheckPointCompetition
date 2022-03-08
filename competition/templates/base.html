@@ -66,10 +66,12 @@
                 {% if invitations %}
                     <ul class="invitations">
                         {% for invitation in invitations %}
-                            <li class="Message_invitations"> Invitation to team {{ invitation }}:
-                                <a href="{% url 'accept_invitation' invitation%}">Accept</a></li>
+                            <li class="Message_invitations">
+                                Invitation to team <a href="{% url 'team' invitation%}">{{ invitation }}</a>:
+                                <a href="{% url 'accept_invitation' invitation%}">Accept</a>
                                 or
-                                <a href="{% url 'refuse_invitation' invitation%}">Refuse</a></li>
+                                <a href="{% url 'refuse_invitation' invitation%}">Refuse</a>
+                            </li>
                         {% endfor %}
                     </ul>
                 {% endif %}
