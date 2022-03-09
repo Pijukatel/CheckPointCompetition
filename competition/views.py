@@ -60,6 +60,9 @@ def leave_team(request):
     """Leave team and redirect to same page."""
     membership = Membership.objects.get(user=request.user)
     team = membership.team
+    # Not possible to leave confirmed team.
+    if team.confirmed:
+        return HttpResponseRedirect(reverse("user"))
 
     # Remove membership
     membership.team = None

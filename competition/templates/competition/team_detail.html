@@ -16,7 +16,10 @@
     <p>Photo:</p>
     {% if not object.confirmed %}
         <div>
-            <a href="{% url "team_update" object.name %}"> Upload photo. </a>
+            Not uploaded yet.
+            {% if users_team == object%}
+                <a href="{% url "team_update" object.name %}"> Upload photo. </a>
+            {% endif %}
         </div>
     {% endif %}
     {% if object.photo %}
@@ -28,7 +31,7 @@
     <ul>Members:
         {% for member in members %}
             <li>{{ member.username }}
-                {% if member.username == user.username %}
+                {% if member.username == user.username and not object.confirmed%}
                     {{ view.extra_context.team }} <a href="{% url 'leave_team'%}"> (Leave team now!) </a>
                 {% endif %}
             </li>
@@ -37,12 +40,17 @@
             {% for member in invited_members %}
                 <li>{{ member.username }}
                     (Pending invitation.)
-                    {{ view.extra_context.team }} <a href="{% url 'delete_invitation' object.name member.username%}">Delete invitation.</a>
+                    {% if users_team == object%}
+                        {{ view.extra_context.team }} <a href="{% url 'delete_invitation' object.name member.username%}">Delete invitation.</a>
+                    {% endif %}
                 </li>
             {% endfor %}
-            <li>
-                <a href="{% url "invite_member" object.name %}"> Invite member. </a>
-            </li>
+
+            {% if users_team == object%}
+                <li>
+                    <a href="{% url "invite_member" object.name %}"> Invite member. </a>
+                </li>
+            {% endif %}
         {% endif %}
     </ul>
 

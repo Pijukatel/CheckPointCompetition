@@ -154,6 +154,16 @@ def test_leave_team(client_with_logged_user1):
 
 @pytest.mark.usefixtures("load_registered_users_1_2_with_team1")
 @pytest.mark.django_db
+def test_leave_confirmed_team_not_possible(client_with_logged_user1):
+    team = Team.objects.get(name=G.team1_name)
+    team.confirmed = True
+    team.save()
+    client_with_logged_user1.get(f"/team/leave/", follow=True)
+    assert Membership.objects.filter(team__name=G.team1_name, user__username=G.user1_name).exists()
+
+
+@pytest.mark.usefixtures("load_registered_users_1_2_with_team1")
+@pytest.mark.django_db
 def test_leave_team_redirect(client_with_logged_user1):
     response = client_with_logged_user1.get(f"/team/leave/", follow=True)
     assertTemplateUsed(response, "/".join([G.APP_NAME, "user_detail.html"]))
