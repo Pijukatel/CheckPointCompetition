@@ -15,7 +15,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         print("Purge them all!")
-        print(os.getcwd())
         self.purge_existing_data()
         self.copy_demo_images()
         self.load_demo_data()
