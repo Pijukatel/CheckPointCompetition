@@ -50,10 +50,10 @@ class Command(BaseCommand):
 
             if i % 2:
                 checkpoint = CheckPoint.objects.create(name=f"{self.demo_checkpoint_base_name}{1+i//2}",
-                                                       photo="DemoPoint.JPG",
+                                                       photo="../static/images/DemoPoint.JPG",
                                                        gps_lon=self.demo_lon+0.01*i,
                                                        gps_lat=self.demo_lat+0.01*i)
-                team = Team.objects.create(name=f"{self.demo_team_base_name}{1+i//2}", photo="DemoTeam.jpeg")
+                team = Team.objects.create(name=f"{self.demo_team_base_name}{1+i//2}", photo="../static/images/DemoTeam.jpeg")
                 if i != 5:
                     team.confirmed=True
                     team.save()
