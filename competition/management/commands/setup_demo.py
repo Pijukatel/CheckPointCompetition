@@ -29,7 +29,7 @@ class Command(BaseCommand):
             team.delete()
 
     def copy_demo_images(self):
-        destination = os.path.join("static", "images", "demo_images")
+        destination = os.path.join("static", "images")
         os.makedirs(os.path.dirname(destination), exist_ok=True)
         os.mkdir(destination)
         shutil.copy(os.path.join("competition", "static", "images", "DemoPoint.JPG"),
@@ -50,10 +50,10 @@ class Command(BaseCommand):
 
             if i % 2:
                 checkpoint = CheckPoint.objects.create(name=f"{self.demo_checkpoint_base_name}{1+i//2}",
-                                                       photo="demo_images/DemoPoint.JPG",
+                                                       photo="DemoPoint.JPG",
                                                        gps_lon=self.demo_lon+0.01*i,
                                                        gps_lat=self.demo_lat+0.01*i)
-                team = Team.objects.create(name=f"{self.demo_team_base_name}{1+i//2}", photo="demo_images/DemoTeam.jpeg")
+                team = Team.objects.create(name=f"{self.demo_team_base_name}{1+i//2}", photo="DemoTeam.jpeg")
                 if i != 5:
                     team.confirmed=True
                     team.save()
