@@ -29,13 +29,13 @@ class Command(BaseCommand):
             team.delete()
 
     def copy_demo_images(self):
-        print(os.path.join("static", "images", "demo_images"))
-        print(os.path.join("static", "images", "checkpoints"))
-
-        shutil.copy(os.path.join("static", "images", "demo_images", "DemoPoint.JPG"),
-                    os.path.join("static", "images", "checkpoints", "DemoPoint.JPG"))
-        shutil.copy(os.path.join("static", "images", "demo_images", "DemoTeam.jpeg"),
-                    os.path.join("static", "images", "teams", "DemoTeam.jpeg"))
+        destination = os.path.join("static", "images", "demo_images")
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        os.mkdir(destination)
+        shutil.copy(os.path.join("competition", "static", "demo_images", "DemoPoint.JPG"),
+                    os.path.join(destination, "DemoPoint.JPG"))
+        shutil.copy(os.path.join("competition", "static", "demo_images", "DemoTeam.jpeg"),
+                    os.path.join(destination, "DemoTeam.jpeg"))
 
     def load_demo_data(self):
         # Admin user:
@@ -50,10 +50,10 @@ class Command(BaseCommand):
 
             if i % 2:
                 checkpoint = CheckPoint.objects.create(name=f"{self.demo_checkpoint_base_name}{1+i//2}",
-                                                       photo="checkpoints/DemoPoint.JPG",
+                                                       photo="demo_images/DemoPoint.JPG",
                                                        gps_lon=self.demo_lon+0.01*i,
                                                        gps_lat=self.demo_lat+0.01*i)
-                team = Team.objects.create(name=f"{self.demo_team_base_name}{1+i//2}", photo="teams/DemoTeam.jpeg")
+                team = Team.objects.create(name=f"{self.demo_team_base_name}{1+i//2}", photo="demo_images/DemoTeam.jpeg")
                 if i != 5:
                     team.confirmed=True
                     team.save()
