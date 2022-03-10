@@ -15,7 +15,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         print("Purge them all!")
-        print(os.getcwd())
         self.purge_existing_data()
         self.copy_demo_images()
         self.load_demo_data()
@@ -30,10 +29,13 @@ class Command(BaseCommand):
             team.delete()
 
     def copy_demo_images(self):
-        shutil.copy(os.path.join("static", "images", "demo_images", "DemoPoint.JPG"),
-                    os.path.join("static", "images", "checkpoints", "DemoPoint.JPG"))
-        shutil.copy(os.path.join("static", "images", "demo_images", "DemoTeam.jpeg"),
-                    os.path.join("static", "images", "teams", "DemoTeam.jpeg"))
+        destination = os.path.join("static", "images")
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        os.mkdir(destination)
+        shutil.copy(os.path.join("competition", "static", "images", "DemoPoint.JPG"),
+                    os.path.join(destination, "DemoPoint.JPG"))
+        shutil.copy(os.path.join("competition", "static", "images", "DemoTeam.jpeg"),
+                    os.path.join(destination, "DemoTeam.jpeg"))
 
     def load_demo_data(self):
         # Admin user:
@@ -48,10 +50,10 @@ class Command(BaseCommand):
 
             if i % 2:
                 checkpoint = CheckPoint.objects.create(name=f"{self.demo_checkpoint_base_name}{1+i//2}",
-                                                       photo="checkpoints/DemoPoint.JPG",
+                                                       photo="../static/images/DemoPoint.JPG",
                                                        gps_lon=self.demo_lon+0.01*i,
                                                        gps_lat=self.demo_lat+0.01*i)
-                team = Team.objects.create(name=f"{self.demo_team_base_name}{1+i//2}", photo="teams/DemoTeam.jpeg")
+                team = Team.objects.create(name=f"{self.demo_team_base_name}{1+i//2}", photo="../static/images/DemoTeam.jpeg")
                 if i != 5:
                     team.confirmed=True
                     team.save()
