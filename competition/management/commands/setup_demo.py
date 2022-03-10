@@ -29,6 +29,9 @@ class Command(BaseCommand):
             team.delete()
 
     def copy_demo_images(self):
+        print(os.path.join("static", "images", "demo_images"))
+        print(os.path.join("static", "images", "checkpoints"))
+
         shutil.copy(os.path.join("static", "images", "demo_images", "DemoPoint.JPG"),
                     os.path.join("static", "images", "checkpoints", "DemoPoint.JPG"))
         shutil.copy(os.path.join("static", "images", "demo_images", "DemoTeam.jpeg"),
