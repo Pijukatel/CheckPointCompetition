@@ -32,9 +32,9 @@ class Command(BaseCommand):
         destination = os.path.join("static", "images", "demo_images")
         os.makedirs(os.path.dirname(destination), exist_ok=True)
         os.mkdir(destination)
-        shutil.copy(os.path.join("competition", "static", "demo_images", "DemoPoint.JPG"),
+        shutil.copy(os.path.join("competition", "static", "images", "DemoPoint.JPG"),
                     os.path.join(destination, "DemoPoint.JPG"))
-        shutil.copy(os.path.join("competition", "static", "demo_images", "DemoTeam.jpeg"),
+        shutil.copy(os.path.join("competition", "static", "images", "DemoTeam.jpeg"),
                     os.path.join(destination, "DemoTeam.jpeg"))
 
     def load_demo_data(self):
