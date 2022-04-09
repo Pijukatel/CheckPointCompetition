@@ -1,1 +1,0 @@
-[{"model": "competition.team", "pk": "TestTeam2", "fields": {"photo": "SomePhoto.jpg", "confirmed": false, "confirmation_date": "2021-07-28T13:08:56.027Z"}}]

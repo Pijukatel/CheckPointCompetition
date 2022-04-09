@@ -1,1 +1,0 @@
-pytest_plugins = ("competition.tests.data_fixtures",)

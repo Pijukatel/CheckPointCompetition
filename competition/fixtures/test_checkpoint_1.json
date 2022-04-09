@@ -1,1 +1,0 @@
-[{"model": "competition.checkpoint", "pk": "TestCheckPoint1", "fields": {"description": "TestDescription", "gps_lat": 57.797, "gps_lon": 12.013, "photo": "checkpoints/TestImage.JPG"}}]
